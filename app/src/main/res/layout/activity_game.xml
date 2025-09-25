@@ -1,0 +1,258 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#225871">
+
+    <!-- Thanh trên cùng chứa các nút điều khiển -->
+    <LinearLayout
+        android:id="@+id/top_bar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageButton
+            android:id="@+id/btn_close_game"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="Close"
+            android:src="@drawable/ic_close"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_gravity="start" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/btn_volume"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="Volume"
+                android:src="@drawable/ic_volume"
+                android:background="?attr/selectableItemBackgroundBorderless" />
+
+            <ImageButton
+                android:id="@+id/btn_pause"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="Pause"
+                android:src="@drawable/ic_pause"
+                android:background="?attr/selectableItemBackgroundBorderless" />
+
+            <ImageButton
+                android:id="@+id/btn_restart"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="Restart"
+                android:src="@drawable/ic_restart"
+                android:background="?attr/selectableItemBackgroundBorderless" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Game grid với viền bao quanh -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/game_grid_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/border_background"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/top_bar"
+        app:layout_constraintEnd_toStartOf="@+id/panel_container"
+        app:layout_constraintBottom_toTopOf="@+id/control_panel"
+        app:layout_constraintDimensionRatio="1:2">
+
+        <!-- Lưới trò chơi fill toàn bộ container -->
+        <FrameLayout
+            android:id="@+id/game_grid"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="#87CEFA"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Panel bên phải chứa Next, Level, Line, Score, mỗi phần là một ô riêng -->
+    <LinearLayout
+        android:id="@+id/panel_container"
+        android:layout_width="100dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/control_panel"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/top_bar"
+        app:layout_constraintVertical_bias="0.0">
+
+        <!-- Phần Next trong ô riêng -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@drawable/border_background"
+            android:orientation="vertical"
+            android:padding="8dp"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:id="@+id/tv_next_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Next"
+                android:textColor="#4B0082"
+                android:layout_marginBottom="16dp"
+                android:textStyle="bold" />
+
+            <com.example.tetrisgamegroup11.ui.game.NextPieceView
+                android:id="@+id/next_piece_container"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:background="#FFFFFF" />
+        </LinearLayout>
+
+        <!-- Phần Level và Line trong ô riêng -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@drawable/border_background"
+            android:orientation="vertical"
+            android:padding="8dp"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:id="@+id/tv_level_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Level"
+                android:layout_marginBottom="8dp"
+                android:textColor="#4B0082"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_level"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#FFFFFF"
+                android:gravity="center"
+                android:padding="8dp"
+                />
+            <TextView
+                android:id="@+id/tv_line_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Line"
+                android:layout_marginBottom="8dp"
+                android:textColor="#4B0082"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_line"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#FFFFFF"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text="0" />
+        </LinearLayout>
+
+        <!-- Phần Score trong ô riêng -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@drawable/border_background"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="8dp">
+            <TextView
+                android:id="@+id/tv_score_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Score"
+                android:layout_marginBottom="16dp"
+                android:textColor="#4B0082"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/tv_score"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#FFFFFF"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text="0" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Bảng điều khiển di chuyển ở dưới cùng -->
+    <LinearLayout
+        android:id="@+id/control_panel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- LEFT -->
+        <Button
+            android:id="@+id/btn_left"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="70dp"
+            android:text="LEFT"
+            android:layout_marginTop="30dp"/>
+
+        <!-- UP + DOWN -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/btn_rotate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="70dp"
+                android:text="ROTATE"
+                android:layout_marginTop="0dp"
+                android:layout_marginBottom="16dp" />
+
+            <Button
+                android:id="@+id/btn_down"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="70dp"
+                android:text="DOWN" />
+        </LinearLayout>
+
+        <!-- RIGHT -->
+        <Button
+            android:id="@+id/btn_right"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="70dp"
+            android:text="RIGHT"
+            android:layout_marginTop="30dp"/>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
