@@ -91,6 +91,36 @@ class MainActivity : AppCompatActivity() {
         toast.show()
     }
 
+    private fun showModeSelectionDialog() {
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.custom_level_dialog)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        val btnEasy = dialog.findViewById<Button>(R.id.btn_easy)
+        val btnMedium = dialog.findViewById<Button>(R.id.btn_medium)
+        val btnHard = dialog.findViewById<Button>(R.id.btn_hard)
+        val btnClose = dialog.findViewById<ImageButton>(R.id.btn_close)
+
+        btnEasy.setOnClickListener {
+            selectedLevel = "Easy"
+            levelButton.text = selectedLevel
+            dialog.dismiss()
+        }
+        btnMedium.setOnClickListener {
+            selectedLevel = "Medium"
+            levelButton.text = selectedLevel
+            dialog.dismiss()
+        }
+        btnHard.setOnClickListener {
+            selectedLevel = "Hard"
+            levelButton.text = selectedLevel
+            dialog.dismiss()
+        }
+        btnClose.setOnClickListener {
+            dialog.dismiss()
+        }
+        dialog.show()
+    }
+
     private fun showLevelSelectionDialog() {
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.custom_level_dialog)

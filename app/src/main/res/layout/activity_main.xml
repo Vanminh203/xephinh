@@ -51,6 +51,18 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="24dp"/>
 
+    <Button
+        android:id="@+id/btn_selectmode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/select_mode"
+        android:backgroundTint="#6495ED"
+        android:textColor="@android:color/black"
+        app:layout_constraintTop_toBottomOf="@id/btn_new_game"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"/>
+
     <!-- Nút Level -->
     <Button
         android:id="@+id/btn_level"
@@ -59,7 +71,7 @@
         android:text="@string/select_level"
         android:backgroundTint="#6495ED"
         android:textColor="@android:color/black"
-        app:layout_constraintTop_toBottomOf="@id/btn_new_game"
+        app:layout_constraintTop_toBottomOf="@id/btn_selectmode"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"/>
