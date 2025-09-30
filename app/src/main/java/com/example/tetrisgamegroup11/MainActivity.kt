@@ -93,25 +93,25 @@ class MainActivity : AppCompatActivity() {
 
     private fun showModeSelectionDialog() {
         val dialog = Dialog(this)
-        dialog.setContentView(R.layout.custom_level_dialog)
+        dialog.setContentView(R.layout.custom_mode_dialog)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        val btnEasy = dialog.findViewById<Button>(R.id.btn_easy)
-        val btnMedium = dialog.findViewById<Button>(R.id.btn_medium)
-        val btnHard = dialog.findViewById<Button>(R.id.btn_hard)
+        val btnEasy = dialog.findViewById<Button>(R.id.btn_classic)
+        val btnMedium = dialog.findViewById<Button>(R.id.btn_morph)
+        val btnHard = dialog.findViewById<Button>(R.id.btn_target)
         val btnClose = dialog.findViewById<ImageButton>(R.id.btn_close)
 
         btnEasy.setOnClickListener {
-            selectedLevel = "Easy"
+            selectedLevel = "Classic"
             levelButton.text = selectedLevel
             dialog.dismiss()
         }
         btnMedium.setOnClickListener {
-            selectedLevel = "Medium"
+            selectedLevel = "Morph"
             levelButton.text = selectedLevel
             dialog.dismiss()
         }
         btnHard.setOnClickListener {
-            selectedLevel = "Hard"
+            selectedLevel = "Target"
             levelButton.text = selectedLevel
             dialog.dismiss()
         }

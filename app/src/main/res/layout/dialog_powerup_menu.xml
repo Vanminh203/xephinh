@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/dialog_background"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Power-Up Menu"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:gravity="center"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="DEFENSE"
+        android:textStyle="bold"
+        android:textColor="#00FF00"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:layout_marginBottom="8dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#1A4D4D4D"
+        android:padding="8dp"
+        android:layout_marginBottom="16dp">
+
+        <Button
+            android:id="@+id/btn_shield"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="Shield - Protect 3 bottom rows"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp"
+            android:backgroundTint="#4CAF50"/>
+
+        <Button
+            android:id="@+id/btn_slow_time"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="Slow Time - Reduce speed 50%"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp"
+            android:backgroundTint="#2196F3"/>
+
+        <Button
+            android:id="@+id/btn_line_bomb"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="Line Bomb - Clear one line"
+            android:textSize="14sp"
+            android:backgroundTint="#FF9800"/>
+    </LinearLayout>
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ATTACK"
+        android:textStyle="bold"
+        android:textColor="#FF0000"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:layout_marginBottom="8dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#1A4D4D4D"
+        android:padding="8dp"
+        android:layout_marginBottom="16dp">
+
+        <Button
+            android:id="@+id/btn_speed_boost"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="Speed Boost - Increase speed 200%"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp"
+            android:backgroundTint="#F44336"/>
+
+        <Button
+            android:id="@+id/btn_chaos"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="Chaos - Random rotation"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp"
+            android:backgroundTint="#9C27B0"/>
+
+        <Button
+            android:id="@+id/btn_junk"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="Junk Lines - Add 2 junk rows"
+            android:textSize="14sp"
+            android:backgroundTint="#795548"/>
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btn_close_menu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Close"
+        android:backgroundTint="#607D8B"/>
+</LinearLayout>

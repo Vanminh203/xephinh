@@ -9,7 +9,7 @@ import com.example.tetrisgamegroup11.utils.Converters
 @Entity
 data class GamePiece(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    @TypeConverters(Converters::class) val type: Type,
+    @TypeConverters(Converters::class) var type: Type,
     @TypeConverters(Converters::class) var shape: Array<IntArray>, // Shape is stored as Array<IntArray>
     var positionX: Int = 3,
     var positionY: Int = 0

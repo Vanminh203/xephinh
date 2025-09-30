@@ -2,6 +2,8 @@ package com.example.tetrisgamegroup11.ui.game
 
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -13,11 +15,14 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.example.tetrisgamegroup11.R
 import com.example.tetrisgamegroup11.audio.SoundManager
 import com.example.tetrisgamegroup11.database.AppDatabase
 import com.example.tetrisgamegroup11.manager.GameManager
 import com.example.tetrisgamegroup11.model.GameGrid
+import com.example.tetrisgamegroup11.model.GameMode
+import com.example.tetrisgamegroup11.model.PowerUpType
 import kotlinx.coroutines.*
 
 class GameActivity : AppCompatActivity() {
@@ -31,6 +36,10 @@ class GameActivity : AppCompatActivity() {
     private lateinit var scoreTextView: TextView
     private lateinit var linesClearedTextView: TextView
 
+    private var powerUpDialog: AlertDialog? = null
+
+    private val handler = Handler(Looper.getMainLooper())
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
@@ -38,8 +47,6 @@ class GameActivity : AppCompatActivity() {
         scoreTextView = findViewById(R.id.tv_score)
         nextPieceView = findViewById(R.id.next_piece_container)
 
-
-        // Khởi tạo AppDatabase và các DAO
         val appDatabase = AppDatabase.getDatabase(this)
         val gamePieceDAO = appDatabase.gamePieceDAO()
         val gameGridDAO = appDatabase.gameGridDAO()
@@ -56,6 +63,9 @@ class GameActivity : AppCompatActivity() {
         SoundManager.playBackgroundMusic()
 
         val selectedLevel = intent.getStringExtra("LEVEL") ?: "Easy"
+        val selectedMode = intent.getStringExtra("MODE") ?: "CLASSIC"
+        val gameMode = GameMode.valueOf(selectedMode)
+
         val levelValue = when (selectedLevel) {
             "Easy" -> 1
             "Medium" -> 2
@@ -80,12 +90,18 @@ class GameActivity : AppCompatActivity() {
             context = this
         )
 
+        gameManager.gameMode = gameMode
+
         gameManager.onLinesClearedUpdated = { linesCleared ->
             updateLinesCleared(linesCleared)
         }
 
         gameManager.onScoreUpdated = { score ->
             updateScore(score)
+        }
+
+        gameManager.onPowerUpStateChanged = { type, powerUp ->
+            updatePowerUpDialogButtons()
         }
 
         gameView.setGameManager(gameManager)
@@ -100,11 +116,14 @@ class GameActivity : AppCompatActivity() {
         levelTextView.text = selectedLevel
 
         setupButtonListeners()
+        setupPowerUpFab()
         updateVolumeIcon()
+
+        startCooldownUpdates()
     }
 
     private fun resetPauseButton() {
-        isPaused = false // Đặt lại trạng thái isPaused
+        isPaused = false
         findViewById<ImageButton>(R.id.btn_pause).setImageResource(R.drawable.ic_pause)
     }
 
@@ -153,6 +172,100 @@ class GameActivity : AppCompatActivity() {
             gameManager.rotatePiece()
             gameView.invalidate()
         }
+    }
+
+    private fun setupPowerUpFab() {
+        findViewById<FloatingActionButton>(R.id.fab_powerup).setOnClickListener {
+            showPowerUpDialog()
+        }
+    }
+
+    private fun showPowerUpDialog() {
+        val dialogBuilder = AlertDialog.Builder(this)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_powerup_menu, null)
+        dialogBuilder.setView(dialogView)
+
+        powerUpDialog = dialogBuilder.create()
+
+        dialogView.findViewById<Button>(R.id.btn_shield).setOnClickListener {
+            usePowerUp(PowerUpType.SHIELD)
+        }
+
+        dialogView.findViewById<Button>(R.id.btn_slow_time).setOnClickListener {
+            usePowerUp(PowerUpType.SLOW_TIME)
+        }
+
+        dialogView.findViewById<Button>(R.id.btn_line_bomb).setOnClickListener {
+            usePowerUp(PowerUpType.LINE_BOMB)
+        }
+
+        dialogView.findViewById<Button>(R.id.btn_speed_boost).setOnClickListener {
+            usePowerUp(PowerUpType.SPEED_BOOST)
+        }
+
+        dialogView.findViewById<Button>(R.id.btn_chaos).setOnClickListener {
+            usePowerUp(PowerUpType.CHAOS_ROTATE)
+        }
+
+        dialogView.findViewById<Button>(R.id.btn_junk).setOnClickListener {
+            usePowerUp(PowerUpType.JUNK_LINES)
+        }
+
+        dialogView.findViewById<Button>(R.id.btn_close_menu).setOnClickListener {
+            powerUpDialog?.dismiss()
+        }
+
+        updatePowerUpDialogButtons()
+
+        powerUpDialog?.show()
+    }
+
+    private fun updatePowerUpDialogButtons() {
+        powerUpDialog?.let { dialog ->
+            val dialogView = dialog.window?.decorView
+
+            updateDialogButton(dialogView, R.id.btn_shield, PowerUpType.SHIELD)
+            updateDialogButton(dialogView, R.id.btn_slow_time, PowerUpType.SLOW_TIME)
+            updateDialogButton(dialogView, R.id.btn_line_bomb, PowerUpType.LINE_BOMB)
+            updateDialogButton(dialogView, R.id.btn_speed_boost, PowerUpType.SPEED_BOOST)
+            updateDialogButton(dialogView, R.id.btn_chaos, PowerUpType.CHAOS_ROTATE)
+            updateDialogButton(dialogView, R.id.btn_junk, PowerUpType.JUNK_LINES)
+        }
+    }
+
+    private fun updateDialogButton(dialogView: android.view.View?, buttonId: Int, type: PowerUpType) {
+        dialogView?.findViewById<Button>(buttonId)?.let { button ->
+            val powerUp = gameManager.powerUps[type]
+            val canUse = powerUp?.canUse(System.currentTimeMillis()) ?: false
+            button.isEnabled = canUse
+            button.alpha = if (canUse) 1.0f else 0.5f
+
+            if (!canUse) {
+                val remainingSeconds = (powerUp?.getRemainingCooldown(System.currentTimeMillis()) ?: 0) / 1000
+                val originalText = button.text.toString().split("\n")[0]
+                button.text = "$originalText\n(${remainingSeconds}s)"
+            }
+        }
+    }
+
+    private fun usePowerUp(type: PowerUpType) {
+        if (gameManager.usePowerUp(type)) {
+            Toast.makeText(this, "${type.getDisplayName()} activated!", Toast.LENGTH_SHORT).show()
+            powerUpDialog?.dismiss()
+        } else {
+            val powerUp = gameManager.powerUps[type]
+            val remainingSeconds = (powerUp?.getRemainingCooldown(System.currentTimeMillis()) ?: 0) / 1000
+            Toast.makeText(this, "Cooldown: ${remainingSeconds}s", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun startCooldownUpdates() {
+        handler.post(object : Runnable {
+            override fun run() {
+                updatePowerUpDialogButtons()
+                handler.postDelayed(this, 1000) // Update every second
+            }
+        })
     }
 
     private fun togglePause() {
@@ -245,5 +358,11 @@ class GameActivity : AppCompatActivity() {
         if (!SoundManager.isMuted()) {
             SoundManager.playBackgroundMusic()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        handler.removeCallbacksAndMessages(null)
+        powerUpDialog?.dismiss()
     }
 }

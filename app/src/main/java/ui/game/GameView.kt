@@ -4,9 +4,11 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.DashPathEffect
 import android.util.AttributeSet
 import android.view.View
 import com.example.tetrisgamegroup11.manager.GameManager
+import com.example.tetrisgamegroup11.model.GameMode
 import com.example.tetrisgamegroup11.model.GamePiece
 
 class GameView @JvmOverloads constructor(
@@ -20,7 +22,6 @@ class GameView @JvmOverloads constructor(
     private var offsetX: Float = 0f
     private var offsetY: Float = 0f
 
-    // Phương thức thiết lập GameManager sau khi khởi tạo
     fun setGameManager(manager: GameManager) {
         this.gameManager = manager
     }
@@ -28,13 +29,11 @@ class GameView @JvmOverloads constructor(
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
 
-        // Kích thước 1 ô vuông
         cellSize = minOf(
             w / gameManager.gameGrid.columns,
             h / gameManager.gameGrid.rows
         )
 
-        // Tính toán offset để căn giữa trong view
         val gridWidth = cellSize * gameManager.gameGrid.columns
         val gridHeight = cellSize * gameManager.gameGrid.rows
 
@@ -44,16 +43,18 @@ class GameView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        drawGrid(canvas)           // Vẽ lưới
-        drawPlacedPieces(canvas)    // Vẽ các khối đã xếp trong lưới
-        drawCurrentPiece(canvas)    // Vẽ khối hiện tại
+        drawGrid(canvas)
+        if (gameManager.gameMode == GameMode.TARGET) {
+            drawTargetLines(canvas)
+        }
+        drawPlacedPieces(canvas)
+        drawCurrentPiece(canvas)
     }
 
     private fun drawGrid(canvas: Canvas) {
         val gridWidth = gameManager.gameGrid.columns * cellSize
         val gridHeight = gameManager.gameGrid.rows * cellSize
 
-        // Vẽ nền toàn bộ lưới
         paint.color = Color.LTGRAY
         paint.style = Paint.Style.FILL
         canvas.drawRect(
@@ -64,22 +65,51 @@ class GameView @JvmOverloads constructor(
             paint
         )
 
-        // Vẽ các đường kẻ
         paint.color = Color.BLACK
-        paint.alpha = 80   // Làm nhạt để không lấn át khối
+        paint.alpha = 80
         paint.strokeWidth = 4f
 
-        // Kẻ cột dọc
         for (i in 0..gameManager.gameGrid.columns) {
             val x = offsetX + i * cellSize.toFloat()
             canvas.drawLine(x, offsetY, x, offsetY + gridHeight, paint)
         }
 
-        // Kẻ hàng ngang
         for (j in 0..gameManager.gameGrid.rows) {
             val y = offsetY + j * cellSize.toFloat()
             canvas.drawLine(offsetX, y, offsetX + gridWidth, y, paint)
         }
+    }
+
+    private fun drawTargetLines(canvas: Canvas) {
+        val gridWidth = gameManager.gameGrid.columns * cellSize
+        paint.color = Color.rgb(255, 215, 0) // Gold color
+        paint.alpha = 100
+        paint.style = Paint.Style.FILL
+
+        gameManager.getTargetLines().forEach { lineIndex ->
+            if (lineIndex in 0 until gameManager.gameGrid.rows) {
+                val top = offsetY + lineIndex * cellSize.toFloat()
+                val bottom = top + cellSize
+                canvas.drawRect(offsetX, top, offsetX + gridWidth, bottom, paint)
+            }
+        }
+
+        // Draw dashed border for target lines
+        paint.alpha = 255
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = 6f
+        paint.pathEffect = DashPathEffect(floatArrayOf(10f, 10f), 0f)
+
+        gameManager.getTargetLines().forEach { lineIndex ->
+            if (lineIndex in 0 until gameManager.gameGrid.rows) {
+                val top = offsetY + lineIndex * cellSize.toFloat()
+                val bottom = top + cellSize
+                canvas.drawRect(offsetX, top, offsetX + gridWidth, bottom, paint)
+            }
+        }
+
+        paint.pathEffect = null
+        paint.style = Paint.Style.FILL
     }
 
     private fun drawPlacedPieces(canvas: Canvas) {
@@ -103,7 +133,6 @@ class GameView @JvmOverloads constructor(
             }
         }
     }
-
 
     private fun drawCurrentPiece(canvas: Canvas) {
         drawPieceAtPosition(

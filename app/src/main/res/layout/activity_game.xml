@@ -12,10 +12,13 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:orientation="horizontal"
+        android:gravity="center_vertical"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toStartOf="@+id/fab_powerup">
 
         <ImageButton
             android:id="@+id/btn_close_game"
@@ -59,6 +62,21 @@
         </LinearLayout>
     </LinearLayout>
 
+    <!-- Floating Action Button for Power-Up Menu -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_powerup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:src="@drawable/ic_powerup"
+        android:contentDescription="Power-Up Menu"
+        app:backgroundTint="#FF6B35"
+        app:tint="#FFFFFF"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/top_bar" />
+
     <!-- Game grid với viền bao quanh -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/game_grid_container"
@@ -66,6 +84,7 @@
         android:layout_height="0dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
         android:background="@drawable/border_background"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/top_bar"
@@ -73,7 +92,6 @@
         app:layout_constraintBottom_toTopOf="@+id/control_panel"
         app:layout_constraintDimensionRatio="1:2">
 
-        <!-- Lưới trò chơi fill toàn bộ container -->
         <FrameLayout
             android:id="@+id/game_grid"
             android:layout_width="0dp"
@@ -85,18 +103,19 @@
             app:layout_constraintEnd_toEndOf="parent"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Panel bên phải chứa Next, Level, Line, Score, mỗi phần là một ô riêng -->
+    <!-- Panel bên phải chứa Next, Level, Line, Score -->
     <LinearLayout
         android:id="@+id/panel_container"
         android:layout_width="100dp"
         android:layout_height="0dp"
         android:orientation="vertical"
+        android:layout_marginTop="8dp"
         app:layout_constraintBottom_toTopOf="@+id/control_panel"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/top_bar"
         app:layout_constraintVertical_bias="0.0">
 
-        <!-- Phần Next trong ô riêng -->
+        <!-- Phần Next -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -123,7 +142,7 @@
                 android:background="#FFFFFF" />
         </LinearLayout>
 
-        <!-- Phần Level và Line trong ô riêng -->
+        <!-- Phần Level và Line -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -149,8 +168,8 @@
                 android:layout_height="wrap_content"
                 android:background="#FFFFFF"
                 android:gravity="center"
-                android:padding="8dp"
-                />
+                android:padding="8dp" />
+
             <TextView
                 android:id="@+id/tv_line_label"
                 android:layout_width="match_parent"
@@ -171,7 +190,7 @@
                 android:text="0" />
         </LinearLayout>
 
-        <!-- Phần Score trong ô riêng -->
+        <!-- Phần Score -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -205,7 +224,9 @@
         android:id="@+id/control_panel"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="8dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -219,7 +240,7 @@
             android:layout_weight="1"
             android:minHeight="70dp"
             android:text="LEFT"
-            android:layout_marginTop="30dp"/>
+            android:layout_marginTop="8dp"/>
 
         <!-- UP + DOWN -->
         <LinearLayout
@@ -234,8 +255,7 @@
                 android:layout_height="wrap_content"
                 android:minHeight="70dp"
                 android:text="ROTATE"
-                android:layout_marginTop="0dp"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="8dp" />
 
             <Button
                 android:id="@+id/btn_down"
@@ -253,6 +273,6 @@
             android:layout_weight="1"
             android:minHeight="70dp"
             android:text="RIGHT"
-            android:layout_marginTop="30dp"/>
+            android:layout_marginTop="8dp"/>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
