@@ -46,7 +46,6 @@ class GameManager(
             field = value
             when (value) {
                 GameMode.TARGET -> {
-                    // Generate 5 random target lines
                     targetLines.clear()
                     repeat(5) {
                         targetLines.add(Random.nextInt(5, 15))
@@ -63,15 +62,16 @@ class GameManager(
     private var morphCounter: Int = 0
 
     val powerUps = mutableMapOf<PowerUpType, PowerUp>()
-    private var shieldActive = false
-    private var slowTimeActive = false
-    private var speedBoostActive = false
-    private var slowTimeEndTime = 0L
-    private var speedBoostEndTime = 0L
+    private var explodingPieceActive = false
+    private var reverseGravityActive = false
+    private var reverseGravityEndTime = 0L
+    private var freezeTimeActive = false
+    private var freezeTimeEndTime = 0L
 
     var onLinesClearedUpdated: ((Int) -> Unit)? = null
     var onScoreUpdated: ((Int) -> Unit)? = null
     var onPowerUpStateChanged: ((PowerUpType, PowerUp) -> Unit)? = null
+    var onVisualEffect: ((String) -> Unit)? = null
 
     private val handler = Handler(Looper.getMainLooper())
     private val fallRunnable = object : Runnable {
@@ -79,7 +79,7 @@ class GameManager(
             if (isGameInProcess && !isPaused) {
                 if (gameMode == GameMode.MORPH) {
                     morphCounter++
-                    if (morphCounter >= 5) { // Morph every 5 moves
+                    if (morphCounter >= 5) {
                         morphCurrentPiece()
                         morphCounter = 0
                     }
@@ -87,7 +87,13 @@ class GameManager(
 
                 checkPowerUpDurations()
 
-                movePieceDown()
+                if (!freezeTimeActive) {
+                    if (reverseGravityActive) {
+                        movePieceUp()
+                    } else {
+                        movePieceDown()
+                    }
+                }
             }
             handler.postDelayed(this, getFallSpeed())
         }
@@ -113,22 +119,11 @@ class GameManager(
     }
 
     private fun getFallSpeed(): Long {
-        val currentTime = System.currentTimeMillis()
-        var baseSpeed = when (level) {
+        val baseSpeed = when (level) {
             "Easy" -> 800L
             "Medium" -> 600L
             "Hard" -> 400L
             else -> 800L
-        }
-
-        // Apply slow time effect
-        if (slowTimeActive && currentTime < slowTimeEndTime) {
-            baseSpeed = (baseSpeed * 1.5).toLong()
-        }
-
-        // Apply speed boost effect
-        if (speedBoostActive && currentTime < speedBoostEndTime) {
-            baseSpeed = (baseSpeed * 0.5).toLong()
         }
 
         return baseSpeed
@@ -152,13 +147,40 @@ class GameManager(
     private fun checkPowerUpDurations() {
         val currentTime = System.currentTimeMillis()
 
-        if (slowTimeActive && currentTime >= slowTimeEndTime) {
-            slowTimeActive = false
+        if (reverseGravityActive && currentTime >= reverseGravityEndTime) {
+            reverseGravityActive = false
+            onVisualEffect?.invoke("reverse_gravity_end")
         }
 
-        if (speedBoostActive && currentTime >= speedBoostEndTime) {
-            speedBoostActive = false
+        if (freezeTimeActive && currentTime >= freezeTimeEndTime) {
+            freezeTimeActive = false
+            onVisualEffect?.invoke("freeze_time_end")
         }
+    }
+
+    private fun movePieceUp() {
+        if (!isPaused && !detectCollisionUp(0, -1)) {
+            currentPiece.positionY--
+        }
+        gameView.invalidate()
+    }
+
+    private fun detectCollisionUp(deltaX: Int, deltaY: Int): Boolean {
+        currentPiece.shape.forEachIndexed { rowIndex, row ->
+            row.forEachIndexed { colIndex, cell ->
+                if (cell == 1) {
+                    val newX = currentPiece.positionX + colIndex + deltaX
+                    val newY = currentPiece.positionY + rowIndex + deltaY
+                    if (newX < 0 || newX >= gameGrid.columns || newY < 0) {
+                        return true
+                    }
+                    if (newY >= 0 && newY < gameGrid.rows && gameGrid.grid[newY][newX] == 1) {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
     }
 
     fun usePowerUp(type: PowerUpType): Boolean {
@@ -172,32 +194,33 @@ class GameManager(
         powerUp.lastUsedTime = currentTime
 
         when (type) {
-            PowerUpType.SHIELD -> {
-                shieldActive = true
-                powerUp.activeDuration = 15000L // 15 seconds
-                Handler(Looper.getMainLooper()).postDelayed({
-                    shieldActive = false
-                }, powerUp.activeDuration)
+            PowerUpType.DELETE_BOTTOM_ROW -> {
+                deleteBottomRow()
+                onVisualEffect?.invoke("delete_row")
             }
-            PowerUpType.SLOW_TIME -> {
-                slowTimeActive = true
-                slowTimeEndTime = currentTime + 10000L // 10 seconds
+            PowerUpType.SWITCH_NEXT_PIECE -> {
+                switchToNextPiece()
+                onVisualEffect?.invoke("switch_piece")
             }
-            PowerUpType.LINE_BOMB -> {
-                clearRandomLine()
+            PowerUpType.EXPLODING_PIECE -> {
+                explodingPieceActive = true
+                onVisualEffect?.invoke("exploding_activated")
             }
-            PowerUpType.SPEED_BOOST -> {
-                speedBoostActive = true
-                speedBoostEndTime = currentTime + 8000L // 8 seconds
+            PowerUpType.REVERSE_GRAVITY -> {
+                reverseGravityActive = true
+                reverseGravityEndTime = currentTime + 3000L // 3 seconds
+                onVisualEffect?.invoke("reverse_gravity")
             }
-            PowerUpType.CHAOS_ROTATE -> {
-                repeat(Random.nextInt(2, 5)) {
-                    currentPiece.rotate()
-                }
+            PowerUpType.RANDOM_NEXT_PIECE -> {
+                nextPiece = generateNewPiece()
+                onNewPieceGenerated?.invoke(nextPiece)
                 gameView.invalidate()
+                onVisualEffect?.invoke("random_piece")
             }
-            PowerUpType.JUNK_LINES -> {
-                addJunkLines(2)
+            PowerUpType.FREEZE_TIME -> {
+                freezeTimeActive = true
+                freezeTimeEndTime = currentTime + 5000L // 5 seconds
+                onVisualEffect?.invoke("freeze_time")
             }
         }
 
@@ -205,54 +228,69 @@ class GameManager(
         return true
     }
 
-    private fun clearRandomLine() {
-        val nonEmptyLines = mutableListOf<Int>()
-        for (i in 0 until gameGrid.rows) {
-            if (gameGrid.grid[i].any { it == 1 }) {
-                nonEmptyLines.add(i)
-            }
+    private fun deleteBottomRow() {
+        val bottomRow = gameGrid.rows - 1
+        gameGrid.grid[bottomRow].fill(0)
+        gameGrid.colors[bottomRow].fill(Color.TRANSPARENT)
+
+        for (i in bottomRow downTo 1) {
+            gameGrid.grid[i] = gameGrid.grid[i - 1].clone()
+            gameGrid.colors[i] = gameGrid.colors[i - 1].clone()
         }
+        gameGrid.grid[0].fill(0)
+        gameGrid.colors[0].fill(Color.TRANSPARENT)
 
-        if (nonEmptyLines.isNotEmpty()) {
-            val lineToRemove = nonEmptyLines[Random.nextInt(nonEmptyLines.size)]
-            gameGrid.grid[lineToRemove].fill(0)
-            gameGrid.colors[lineToRemove].fill(Color.TRANSPARENT)
-
-            // Shift down
-            for (i in lineToRemove downTo 1) {
-                gameGrid.grid[i] = gameGrid.grid[i - 1].clone()
-                gameGrid.colors[i] = gameGrid.colors[i - 1].clone()
-            }
-            gameGrid.grid[0].fill(0)
-            gameGrid.colors[0].fill(Color.TRANSPARENT)
-
-            score += 50
-            onScoreUpdated?.invoke(score)
-            SoundManager.playLineClearSound()
-            gameView.invalidate()
-        }
+        score += 50
+        onScoreUpdated?.invoke(score)
+        SoundManager.playLineClearSound()
+        gameView.invalidate()
     }
 
-    private fun addJunkLines(count: Int) {
-        // Shift existing blocks up
-        for (i in 0 until gameGrid.rows - count) {
-            gameGrid.grid[i] = gameGrid.grid[i + count].clone()
-            gameGrid.colors[i] = gameGrid.colors[i + count].clone()
-        }
+    private fun switchToNextPiece() {
+        currentPiece = nextPiece
+        currentPiece.positionX = (gameGrid.columns - currentPiece.shape[0].size) / 2
+        currentPiece.positionY = 0
 
-        // Add junk lines at bottom
-        for (i in gameGrid.rows - count until gameGrid.rows) {
-            val holePosition = Random.nextInt(gameGrid.columns)
-            for (j in 0 until gameGrid.columns) {
-                if (j != holePosition) {
-                    gameGrid.grid[i][j] = 1
-                    gameGrid.colors[i][j] = Color.GRAY
-                } else {
-                    gameGrid.grid[i][j] = 0
-                    gameGrid.colors[i][j] = Color.TRANSPARENT
+        nextPiece = generateNewPiece()
+        onNewPieceGenerated?.invoke(nextPiece)
+        gameView.invalidate()
+    }
+
+    private fun explodePiece() {
+        val touchedBlocks = mutableSetOf<Pair<Int, Int>>()
+
+        currentPiece.shape.forEachIndexed { rowIndex, row ->
+            row.forEachIndexed { colIndex, cell ->
+                if (cell == 1) {
+                    val x = currentPiece.positionX + colIndex
+                    val y = currentPiece.positionY + rowIndex
+
+                    val adjacentCells = listOf(
+                        Pair(x, y + 1),  // below
+                        Pair(x, y - 1),  // above
+                        Pair(x - 1, y),  // left
+                        Pair(x + 1, y)   // right
+                    )
+
+                    adjacentCells.forEach { (adjX, adjY) ->
+                        if (adjX in 0 until gameGrid.columns &&
+                            adjY in 0 until gameGrid.rows &&
+                            gameGrid.grid[adjY][adjX] == 1) {
+                            touchedBlocks.add(Pair(adjX, adjY))
+                        }
+                    }
                 }
             }
         }
+
+        touchedBlocks.forEach { (x, y) ->
+            gameGrid.grid[y][x] = 0
+            gameGrid.colors[y][x] = Color.TRANSPARENT
+        }
+
+        score += touchedBlocks.size * 10
+        onScoreUpdated?.invoke(score)
+        onVisualEffect?.invoke("explosion")
         gameView.invalidate()
     }
 
@@ -297,9 +335,9 @@ class GameManager(
         gameView.reset()
         gameView.invalidate()
 
-        shieldActive = false
-        slowTimeActive = false
-        speedBoostActive = false
+        explodingPieceActive = false
+        reverseGravityActive = false
+        freezeTimeActive = false
         morphCounter = 0
         initializePowerUps()
 
@@ -376,15 +414,21 @@ class GameManager(
         if (!isPaused && !detectCollision(0, 1)) {
             currentPiece.positionY++
         } else {
-            placePieceInGrid()
-            val rowsCleared = gameGrid.checkAndClearFullRows()
-            if (rowsCleared > 0) {
-                updateScore(rowsCleared)
+            if (explodingPieceActive) {
+                explodePiece()
+                explodingPieceActive = false
+            } else {
+                placePieceInGrid()
+                val rowsCleared = gameGrid.checkAndClearFullRows()
+                if (rowsCleared > 0) {
+                    updateScore(rowsCleared)
 
-                if (gameMode == GameMode.TARGET) {
-                    checkTargetCompletion(rowsCleared)
+                    if (gameMode == GameMode.TARGET) {
+                        checkTargetCompletion(rowsCleared)
+                    }
                 }
             }
+
             currentPiece = nextPiece
             currentPiece.positionX = (gameGrid.columns - currentPiece.shape[0].size) / 2
             currentPiece.positionY = 0
@@ -396,23 +440,21 @@ class GameManager(
     }
 
     private fun checkTargetCompletion(rowsCleared: Int) {
-        // Remove cleared target lines and add bonus score
         val iterator = targetLines.iterator()
         while (iterator.hasNext()) {
             val targetLine = iterator.next()
             if (gameGrid.grid[targetLine].all { it == 0 }) {
                 iterator.remove()
-                score += 500 // Bonus for clearing target line
+                score += 500
                 onScoreUpdated?.invoke(score)
             }
         }
 
-        // If all targets cleared, generate new ones
         if (targetLines.isEmpty()) {
             repeat(5) {
                 targetLines.add(Random.nextInt(5, 15))
             }
-            score += 1000 // Big bonus for completing all targets
+            score += 1000
             onScoreUpdated?.invoke(score)
         }
     }
@@ -451,29 +493,6 @@ class GameManager(
     }
 
     fun checkGameOver() {
-        if (shieldActive) {
-            val protectedRows = 3
-            var hasCollisionInProtectedZone = false
-
-            for (row in gameGrid.rows - protectedRows until gameGrid.rows) {
-                if (gameGrid.grid[row].any { it == 1 }) {
-                    hasCollisionInProtectedZone = true
-                    break
-                }
-            }
-
-            if (hasCollisionInProtectedZone) {
-                // Clear protected rows
-                for (row in gameGrid.rows - protectedRows until gameGrid.rows) {
-                    gameGrid.grid[row].fill(0)
-                    gameGrid.colors[row].fill(Color.TRANSPARENT)
-                }
-                shieldActive = false
-                gameView.invalidate()
-                return
-            }
-        }
-
         if (detectCollision(0, 0)) {
             endGame()
         }

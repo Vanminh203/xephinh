@@ -1,44 +1,43 @@
 package com.example.tetrisgamegroup11.model
 
-// Các cơ chế phòng thủ và tấn công
 enum class PowerUpType {
-    // Phòng thủ (Defense)
-    SHIELD,        // Bảo vệ 3 dòng dưới cùng khỏi game over
-    SLOW_TIME,     // Làm chậm tốc độ rơi 50% trong 10 giây
-    LINE_BOMB,     // Xóa ngay lập tức 1 dòng bất kỳ
+    // Tấn công (Attack) - 45s cooldown
+    DELETE_BOTTOM_ROW,      // Xóa 1 hàng dưới cùng của bảng
+    SWITCH_NEXT_PIECE,      // Đổi sang khối tiếp theo ngay lập tức
+    EXPLODING_PIECE,        // Khối nổ - phá hủy tất cả block mà nó chạm vào
 
-    // Tấn công (Attack)
-    SPEED_BOOST,   // Tăng tốc độ rơi 200% trong 8 giây
-    CHAOS_ROTATE,  // Xoay ngẫu nhiên khối hiện tại 3 lần
-    JUNK_LINES;    // Thêm 2 dòng rác (có lỗ trống) ở đáy
+    // Phòng thủ (Defense) - 30s cooldown (trừ FREEZE_TIME = 60s)
+    REVERSE_GRAVITY,        // Đảo ngược trọng lực - khối bay lên trong 3 giây
+    RANDOM_NEXT_PIECE,      // Đổi khối tiếp theo thành khối khác ngẫu nhiên
+    FREEZE_TIME;            // Ngưng đọng thời gian - dừng rơi nhưng vẫn di chuyển được
 
     fun isDefense(): Boolean {
-        return this in listOf(SHIELD, SLOW_TIME, LINE_BOMB)
+        return this in listOf(REVERSE_GRAVITY, RANDOM_NEXT_PIECE, FREEZE_TIME)
     }
 
     fun isAttack(): Boolean {
-        return this in listOf(SPEED_BOOST, CHAOS_ROTATE, JUNK_LINES)
+        return this in listOf(DELETE_BOTTOM_ROW, SWITCH_NEXT_PIECE, EXPLODING_PIECE)
     }
 
     fun getDisplayName(): String {
         return when (this) {
-            SHIELD -> "Shield"
-            SLOW_TIME -> "Slow Time"
-            LINE_BOMB -> "Line Bomb"
-            SPEED_BOOST -> "Speed Boost"
-            CHAOS_ROTATE -> "Chaos"
-            JUNK_LINES -> "Junk Lines"
+            DELETE_BOTTOM_ROW -> "Delete Bottom Row"
+            SWITCH_NEXT_PIECE -> "Switch Next"
+            EXPLODING_PIECE -> "Exploding Piece"
+            REVERSE_GRAVITY -> "Reverse Gravity"
+            RANDOM_NEXT_PIECE -> "Random Next"
+            FREEZE_TIME -> "Freeze Time"
         }
     }
 
     fun getCooldown(): Long {
         return when (this) {
-            SHIELD -> 30000L      // 30 giây
-            SLOW_TIME -> 25000L   // 25 giây
-            LINE_BOMB -> 20000L   // 20 giây
-            SPEED_BOOST -> 20000L // 20 giây
-            CHAOS_ROTATE -> 15000L // 15 giây
-            JUNK_LINES -> 25000L  // 25 giây
+            DELETE_BOTTOM_ROW -> 45000L      // 45 giây
+            SWITCH_NEXT_PIECE -> 45000L      // 45 giây
+            EXPLODING_PIECE -> 45000L        // 45 giây
+            REVERSE_GRAVITY -> 30000L        // 30 giây
+            RANDOM_NEXT_PIECE -> 30000L      // 30 giây
+            FREEZE_TIME -> 60000L            // 60 giây
         }
     }
 }

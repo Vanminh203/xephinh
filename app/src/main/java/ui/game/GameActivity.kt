@@ -7,6 +7,9 @@ import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.View
+import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageButton
@@ -35,6 +38,7 @@ class GameActivity : AppCompatActivity() {
     private lateinit var nextPieceView: NextPieceView
     private lateinit var scoreTextView: TextView
     private lateinit var linesClearedTextView: TextView
+    private lateinit var gameContainer: ConstraintLayout
 
     private var powerUpDialog: AlertDialog? = null
 
@@ -46,6 +50,7 @@ class GameActivity : AppCompatActivity() {
         linesClearedTextView = findViewById(R.id.tv_line)
         scoreTextView = findViewById(R.id.tv_score)
         nextPieceView = findViewById(R.id.next_piece_container)
+        gameContainer = findViewById(R.id.game_grid_container)
 
         val appDatabase = AppDatabase.getDatabase(this)
         val gamePieceDAO = appDatabase.gamePieceDAO()
@@ -102,6 +107,10 @@ class GameActivity : AppCompatActivity() {
 
         gameManager.onPowerUpStateChanged = { type, powerUp ->
             updatePowerUpDialogButtons()
+        }
+
+        gameManager.onVisualEffect = { effectType ->
+            showVisualEffect(effectType)
         }
 
         gameView.setGameManager(gameManager)
@@ -187,28 +196,30 @@ class GameActivity : AppCompatActivity() {
 
         powerUpDialog = dialogBuilder.create()
 
-        dialogView.findViewById<Button>(R.id.btn_shield).setOnClickListener {
-            usePowerUp(PowerUpType.SHIELD)
+        // Defense skills
+        dialogView.findViewById<Button>(R.id.btn_invert).setOnClickListener {
+            usePowerUp(PowerUpType.REVERSE_GRAVITY)
+        }
+
+        dialogView.findViewById<Button>(R.id.btn_next).setOnClickListener {
+            usePowerUp(PowerUpType.RANDOM_NEXT_PIECE)
         }
 
         dialogView.findViewById<Button>(R.id.btn_slow_time).setOnClickListener {
-            usePowerUp(PowerUpType.SLOW_TIME)
+            usePowerUp(PowerUpType.FREEZE_TIME)
+        }
+
+        // Attack skills
+        dialogView.findViewById<Button>(R.id.btn_delete).setOnClickListener {
+            usePowerUp(PowerUpType.DELETE_BOTTOM_ROW)
+        }
+
+        dialogView.findViewById<Button>(R.id.btn_convert).setOnClickListener {
+            usePowerUp(PowerUpType.SWITCH_NEXT_PIECE)
         }
 
         dialogView.findViewById<Button>(R.id.btn_line_bomb).setOnClickListener {
-            usePowerUp(PowerUpType.LINE_BOMB)
-        }
-
-        dialogView.findViewById<Button>(R.id.btn_speed_boost).setOnClickListener {
-            usePowerUp(PowerUpType.SPEED_BOOST)
-        }
-
-        dialogView.findViewById<Button>(R.id.btn_chaos).setOnClickListener {
-            usePowerUp(PowerUpType.CHAOS_ROTATE)
-        }
-
-        dialogView.findViewById<Button>(R.id.btn_junk).setOnClickListener {
-            usePowerUp(PowerUpType.JUNK_LINES)
+            usePowerUp(PowerUpType.EXPLODING_PIECE)
         }
 
         dialogView.findViewById<Button>(R.id.btn_close_menu).setOnClickListener {
@@ -224,16 +235,16 @@ class GameActivity : AppCompatActivity() {
         powerUpDialog?.let { dialog ->
             val dialogView = dialog.window?.decorView
 
-            updateDialogButton(dialogView, R.id.btn_shield, PowerUpType.SHIELD)
-            updateDialogButton(dialogView, R.id.btn_slow_time, PowerUpType.SLOW_TIME)
-            updateDialogButton(dialogView, R.id.btn_line_bomb, PowerUpType.LINE_BOMB)
-            updateDialogButton(dialogView, R.id.btn_speed_boost, PowerUpType.SPEED_BOOST)
-            updateDialogButton(dialogView, R.id.btn_chaos, PowerUpType.CHAOS_ROTATE)
-            updateDialogButton(dialogView, R.id.btn_junk, PowerUpType.JUNK_LINES)
+            updateDialogButton(dialogView, R.id.btn_invert, PowerUpType.REVERSE_GRAVITY)
+            updateDialogButton(dialogView, R.id.btn_next, PowerUpType.RANDOM_NEXT_PIECE)
+            updateDialogButton(dialogView, R.id.btn_slow_time, PowerUpType.FREEZE_TIME)
+            updateDialogButton(dialogView, R.id.btn_delete, PowerUpType.DELETE_BOTTOM_ROW)
+            updateDialogButton(dialogView, R.id.btn_convert, PowerUpType.SWITCH_NEXT_PIECE)
+            updateDialogButton(dialogView, R.id.btn_line_bomb, PowerUpType.EXPLODING_PIECE)
         }
     }
 
-    private fun updateDialogButton(dialogView: android.view.View?, buttonId: Int, type: PowerUpType) {
+    private fun updateDialogButton(dialogView: View?, buttonId: Int, type: PowerUpType) {
         dialogView?.findViewById<Button>(buttonId)?.let { button ->
             val powerUp = gameManager.powerUps[type]
             val canUse = powerUp?.canUse(System.currentTimeMillis()) ?: false
@@ -263,7 +274,7 @@ class GameActivity : AppCompatActivity() {
         handler.post(object : Runnable {
             override fun run() {
                 updatePowerUpDialogButtons()
-                handler.postDelayed(this, 1000) // Update every second
+                handler.postDelayed(this, 1000)
             }
         })
     }
@@ -364,5 +375,66 @@ class GameActivity : AppCompatActivity() {
         super.onDestroy()
         handler.removeCallbacksAndMessages(null)
         powerUpDialog?.dismiss()
+    }
+
+    private fun showVisualEffect(effectType: String) {
+        when (effectType) {
+            "explosion" -> {
+                // Flash red for explosion
+                flashScreen(Color.argb(100, 255, 0, 0), 200)
+                Toast.makeText(this, "💥 EXPLOSION!", Toast.LENGTH_SHORT).show()
+            }
+            "reverse_gravity" -> {
+                // Flash blue for reverse gravity
+                flashScreen(Color.argb(100, 0, 100, 255), 300)
+                Toast.makeText(this, "⬆️ Reverse Gravity Active!", Toast.LENGTH_SHORT).show()
+            }
+            "reverse_gravity_end" -> {
+                Toast.makeText(this, "Gravity Restored", Toast.LENGTH_SHORT).show()
+            }
+            "freeze_time" -> {
+                // Flash white for freeze time
+                flashScreen(Color.argb(150, 255, 255, 255), 500)
+                Toast.makeText(this, "⏸️ Time Frozen!", Toast.LENGTH_SHORT).show()
+            }
+            "freeze_time_end" -> {
+                Toast.makeText(this, "Time Resumed", Toast.LENGTH_SHORT).show()
+            }
+            "delete_row" -> {
+                flashScreen(Color.argb(80, 255, 255, 0), 200)
+            }
+            "switch_piece" -> {
+                flashScreen(Color.argb(80, 0, 255, 0), 200)
+            }
+            "exploding_activated" -> {
+                Toast.makeText(this, "💣 Exploding Piece Ready!", Toast.LENGTH_SHORT).show()
+            }
+            "random_piece" -> {
+                Toast.makeText(this, "🎲 Next Piece Changed!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun flashScreen(color: Int, duration: Long) {
+        val flashView = View(this)
+        flashView.setBackgroundColor(color)
+        flashView.layoutParams = ConstraintLayout.LayoutParams(
+            ConstraintLayout.LayoutParams.MATCH_PARENT,
+            ConstraintLayout.LayoutParams.MATCH_PARENT
+        )
+
+        gameContainer.addView(flashView)
+
+        val fadeOut = AlphaAnimation(1.0f, 0.0f)
+        fadeOut.duration = duration
+        fadeOut.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationStart(animation: Animation?) {}
+            override fun onAnimationRepeat(animation: Animation?) {}
+            override fun onAnimationEnd(animation: Animation?) {
+                gameContainer.removeView(flashView)
+            }
+        })
+
+        flashView.startAnimation(fadeOut)
     }
 }

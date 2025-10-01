@@ -14,9 +14,11 @@ import com.example.tetrisgamegroup11.ui.game.RankingActivity
 
 class MainActivity : AppCompatActivity() {
     private lateinit var newGameButton: Button
+    private lateinit var selectModeButton: Button
     private lateinit var levelButton: Button
     private lateinit var rankingButton: Button
     private lateinit var volumeButton: ImageButton
+    private var selectedMode: String? = null
     private var selectedLevel: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,6 +30,7 @@ class MainActivity : AppCompatActivity() {
         SoundManager.playBackgroundMusic()
 
         newGameButton = findViewById(R.id.btn_new_game)
+        selectModeButton = findViewById(R.id.btn_selectmode)
         levelButton = findViewById(R.id.btn_level)
         rankingButton = findViewById(R.id.btn_ranking)
         volumeButton = findViewById(R.id.btn_volume)
@@ -38,7 +41,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        updateVolumeIcon()  // Cập nhật biểu tượng âm thanh khi quay lại màn hình
+        updateVolumeIcon()
         if (!SoundManager.isMuted()) {
             SoundManager.playBackgroundMusic()
         }
@@ -51,17 +54,28 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupButtonListeners() {
         newGameButton.setOnClickListener {
-            if (selectedLevel == null) {
-                showCustomToast() // Hiển thị Toast nếu chưa chọn cấp độ
+            if (selectedMode == null) {
+                Toast.makeText(this, "Bạn phải chọn chế độ trước!", Toast.LENGTH_SHORT).show()
+            } else if (selectedLevel == null) {
+                showCustomToast()
             } else {
                 val intent = Intent(this, GameActivity::class.java)
-                intent.putExtra("LEVEL", selectedLevel) // Truyền cấp độ đã chọn
+                intent.putExtra("LEVEL", selectedLevel)
+                intent.putExtra("MODE", selectedMode)
                 startActivity(intent)
             }
         }
 
+        selectModeButton.setOnClickListener {
+            showModeSelectionDialog()
+        }
+
         levelButton.setOnClickListener {
-            showLevelSelectionDialog()
+            if (selectedMode == null) {
+                Toast.makeText(this, "Bạn phải chọn chế độ trước!", Toast.LENGTH_SHORT).show()
+            } else {
+                showLevelSelectionDialog()
+            }
         }
 
         rankingButton.setOnClickListener {
@@ -95,24 +109,24 @@ class MainActivity : AppCompatActivity() {
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.custom_mode_dialog)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        val btnEasy = dialog.findViewById<Button>(R.id.btn_classic)
-        val btnMedium = dialog.findViewById<Button>(R.id.btn_morph)
-        val btnHard = dialog.findViewById<Button>(R.id.btn_target)
+        val btnClassic = dialog.findViewById<Button>(R.id.btn_classic)
+        val btnMorph = dialog.findViewById<Button>(R.id.btn_morph)
+        val btnTarget = dialog.findViewById<Button>(R.id.btn_target)
         val btnClose = dialog.findViewById<ImageButton>(R.id.btn_close)
 
-        btnEasy.setOnClickListener {
-            selectedLevel = "Classic"
-            levelButton.text = selectedLevel
+        btnClassic.setOnClickListener {
+            selectedMode = "CLASSIC"
+            selectModeButton.text = "Mode: Classic"
             dialog.dismiss()
         }
-        btnMedium.setOnClickListener {
-            selectedLevel = "Morph"
-            levelButton.text = selectedLevel
+        btnMorph.setOnClickListener {
+            selectedMode = "MORPH"
+            selectModeButton.text = "Mode: Morph"
             dialog.dismiss()
         }
-        btnHard.setOnClickListener {
-            selectedLevel = "Target"
-            levelButton.text = selectedLevel
+        btnTarget.setOnClickListener {
+            selectedMode = "TARGET"
+            selectModeButton.text = "Mode: Target"
             dialog.dismiss()
         }
         btnClose.setOnClickListener {
@@ -132,17 +146,17 @@ class MainActivity : AppCompatActivity() {
 
         btnEasy.setOnClickListener {
             selectedLevel = "Easy"
-            levelButton.text = selectedLevel
+            levelButton.text = "Level: $selectedLevel"
             dialog.dismiss()
         }
         btnMedium.setOnClickListener {
             selectedLevel = "Medium"
-            levelButton.text = selectedLevel
+            levelButton.text = "Level: $selectedLevel"
             dialog.dismiss()
         }
         btnHard.setOnClickListener {
             selectedLevel = "Hard"
-            levelButton.text = selectedLevel
+            levelButton.text = "Level: $selectedLevel"
             dialog.dismiss()
         }
         btnClose.setOnClickListener {
