@@ -1,0 +1,24 @@
+<!-- Placeholder for congratulation image - user should replace with actual image -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="150dp"
+    android:viewportWidth="200"
+    android:viewportHeight="150">
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M100,75m-60,0a60,60 0,1 1,120 0a60,60 0,1 1,-120 0"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M70,60m-8,0a8,8 0,1 1,16 0a8,8 0,1 1,-16 0"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M130,60m-8,0a8,8 0,1 1,16 0a8,8 0,1 1,-16 0"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:strokeWidth="4"
+        android:strokeColor="#FFFFFF"
+        android:pathData="M70,90 Q100,110 130,90"/>
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M100,20 L110,50 L140,50 L115,70 L125,100 L100,80 L75,100 L85,70 L60,50 L90,50 Z"/>
+</vector>

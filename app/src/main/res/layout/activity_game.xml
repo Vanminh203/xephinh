@@ -1,12 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#225871">
+    android:background="#1A1A2E">
 
-    <!-- Thanh trên cùng chứa các nút điều khiển -->
+    <!--Thanh trên cùng chứa các nút điều khiển-->>
     <LinearLayout
         android:id="@+id/top_bar"
         android:layout_width="0dp"
@@ -62,7 +62,7 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Floating Action Button for Power-Up Menu -->
+    <!-- Floating Action Button for Power-Up Menu-->>
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_powerup"
         android:layout_width="wrap_content"
@@ -77,7 +77,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/top_bar" />
 
-    <!-- Game grid với viền bao quanh -->
+    <!--Game grid với viền bao quanh-->>
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/game_grid_container"
         android:layout_width="0dp"
@@ -96,34 +96,35 @@
             android:id="@+id/game_grid"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:background="#87CEFA"
+            android:background="#0F3460"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Panel bên phải chứa Next, Level, Line, Score -->
+    <!--Updated panel with better styling and added time display
+    Panel bên phải chứa Next, Level, Line, Score, Time-->>
     <LinearLayout
         android:id="@+id/panel_container"
-        android:layout_width="100dp"
+        android:layout_width="110dp"
         android:layout_height="0dp"
         android:orientation="vertical"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
         app:layout_constraintBottom_toTopOf="@+id/control_panel"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/top_bar"
-        app:layout_constraintVertical_bias="0.0">
+        app:layout_constraintTop_toBottomOf="@id/top_bar">
 
-        <!-- Phần Next -->
+        <!--Phần Next-->>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_weight="1.2"
             android:background="@drawable/border_background"
             android:orientation="vertical"
             android:padding="8dp"
-            android:layout_marginBottom="4dp">
+            android:layout_marginBottom="8dp">
 
             <TextView
                 android:id="@+id/tv_next_label"
@@ -131,26 +132,27 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="Next"
-                android:textColor="#4B0082"
-                android:layout_marginBottom="16dp"
+                android:textColor="#E94560"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp"
                 android:textStyle="bold" />
 
             <com.example.tetrisgamegroup11.ui.game.NextPieceView
                 android:id="@+id/next_piece_container"
                 android:layout_width="match_parent"
-                android:layout_height="100dp"
+                android:layout_height="match_parent"
                 android:background="#FFFFFF" />
         </LinearLayout>
 
-        <!-- Phần Level và Line -->
+        <!--Phần Level-->>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_weight="0.8"
             android:background="@drawable/border_background"
             android:orientation="vertical"
             android:padding="8dp"
-            android:layout_marginBottom="4dp">
+            android:layout_marginBottom="8dp">
 
             <TextView
                 android:id="@+id/tv_level_label"
@@ -158,8 +160,9 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="Level"
-                android:layout_marginBottom="8dp"
-                android:textColor="#4B0082"
+                android:textColor="#E94560"
+                android:textSize="14sp"
+                android:layout_marginBottom="4dp"
                 android:textStyle="bold" />
 
             <TextView
@@ -168,7 +171,20 @@
                 android:layout_height="wrap_content"
                 android:background="#FFFFFF"
                 android:gravity="center"
+                android:textSize="16sp"
+                android:textStyle="bold"
                 android:padding="8dp" />
+        </LinearLayout>
+
+        <!--Phần Line-->>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.8"
+            android:background="@drawable/border_background"
+            android:orientation="vertical"
+            android:padding="8dp"
+            android:layout_marginBottom="8dp">
 
             <TextView
                 android:id="@+id/tv_line_label"
@@ -176,8 +192,9 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="Line"
-                android:layout_marginBottom="8dp"
-                android:textColor="#4B0082"
+                android:textColor="#E94560"
+                android:textSize="14sp"
+                android:layout_marginBottom="4dp"
                 android:textStyle="bold" />
 
             <TextView
@@ -186,53 +203,96 @@
                 android:layout_height="wrap_content"
                 android:background="#FFFFFF"
                 android:gravity="center"
+                android:textSize="16sp"
+                android:textStyle="bold"
                 android:padding="8dp"
                 android:text="0" />
         </LinearLayout>
 
-        <!-- Phần Score -->
+        <!--Phần Score-->>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_weight="0.8"
             android:background="@drawable/border_background"
             android:orientation="vertical"
-            android:gravity="center"
-            android:padding="8dp">
+            android:padding="8dp"
+            android:layout_marginBottom="8dp">
+
             <TextView
                 android:id="@+id/tv_score_label"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="Score"
-                android:layout_marginBottom="16dp"
-                android:textColor="#4B0082"
+                android:textColor="#E94560"
+                android:textSize="14sp"
+                android:layout_marginBottom="4dp"
                 android:textStyle="bold" />
+
             <TextView
                 android:id="@+id/tv_score"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="#FFFFFF"
                 android:gravity="center"
+                android:textSize="16sp"
+                android:textStyle="bold"
                 android:padding="8dp"
                 android:text="0" />
         </LinearLayout>
+
+        <!--Added Time display section
+        Phần Time-->>
+        <LinearLayout
+            android:id="@+id/time_container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.8"
+            android:background="@drawable/border_background"
+            android:orientation="vertical"
+            android:padding="8dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_time_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Time"
+                android:textColor="#E94560"
+                android:textSize="14sp"
+                android:layout_marginBottom="4dp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#FFFFFF"
+                android:gravity="center"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:padding="8dp"
+                android:text="0:00" />
+        </LinearLayout>
     </LinearLayout>
 
-    <!-- Bảng điều khiển di chuyển ở dưới cùng -->
+    <!--Updated control panel with better styling
+    Bảng điều khiển di chuyển ở dưới cùng-->>
     <LinearLayout
         android:id="@+id/control_panel"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- LEFT -->
+
         <Button
             android:id="@+id/btn_left"
             android:layout_width="0dp"
@@ -240,14 +300,19 @@
             android:layout_weight="1"
             android:minHeight="70dp"
             android:text="LEFT"
-            android:layout_marginTop="8dp"/>
+            android:textStyle="bold"
+            android:backgroundTint="#E94560"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="4dp"/>
 
-        <!-- UP + DOWN -->
+
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp">
 
             <Button
                 android:id="@+id/btn_rotate"
@@ -255,6 +320,8 @@
                 android:layout_height="wrap_content"
                 android:minHeight="70dp"
                 android:text="ROTATE"
+                android:textStyle="bold"
+                android:backgroundTint="#16213E"
                 android:layout_marginBottom="8dp" />
 
             <Button
@@ -262,10 +329,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:minHeight="70dp"
-                android:text="DOWN" />
+                android:text="DOWN"
+                android:textStyle="bold"
+                android:backgroundTint="#16213E" />
         </LinearLayout>
 
-        <!-- RIGHT -->
         <Button
             android:id="@+id/btn_right"
             android:layout_width="0dp"
@@ -273,6 +341,9 @@
             android:layout_weight="1"
             android:minHeight="70dp"
             android:text="RIGHT"
-            android:layout_marginTop="8dp"/>
+            android:textStyle="bold"
+            android:backgroundTint="#E94560"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="4dp"/>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

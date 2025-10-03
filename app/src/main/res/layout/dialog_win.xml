@@ -2,41 +2,50 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="20dp"
+    android:padding="24dp"
     android:background="@color/white"
     android:gravity="center">
 
-    <!-- added ImageView for you_lost image -->
+    <!-- added ImageView for congratulation image -->
     <ImageView
         android:layout_width="200dp"
         android:layout_height="150dp"
-        android:src="@drawable/you_lost"
-        android:contentDescription="You Lost"
+        android:src="@drawable/congratulation"
+        android:contentDescription="Congratulations"
         android:scaleType="fitCenter"
         android:layout_marginBottom="16dp" />
 
-    <!-- Tiêu đề Game Over -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Game Over"
+        android:text="🎉 VICTORY! 🎉"
         android:textStyle="bold"
-        android:textSize="24sp"
-        android:textColor="#000000"
+        android:textSize="28sp"
+        android:textColor="#4CAF50"
         android:gravity="center"
         android:layout_gravity="center"
         android:layout_marginBottom="16dp" />
 
-    <!-- Điểm của người chơi -->
     <TextView
         android:id="@+id/tv_score"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Your Score"
         android:textSize="20sp"
+        android:textColor="#000000"
         android:gravity="center"
         android:layout_gravity="center"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Congratulations! You've reached the target!"
+        android:textSize="14sp"
+        android:textColor="#666666"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:layout_marginBottom="24dp" />
 
     <!-- updated buttons to Play Again and View High Score -->
     <LinearLayout
@@ -44,16 +53,16 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_gravity="center"
-        android:gravity="center"
-        android:layout_marginTop="16dp">
+        android:gravity="center">
 
         <Button
             android:id="@+id/btn_play_again"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Play Again"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp" />
+            android:backgroundTint="#4CAF50"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp" />
 
         <Button
             android:id="@+id/btn_view_high_score"
@@ -61,7 +70,7 @@
             android:layout_height="wrap_content"
             android:text="View High Score"
             android:layout_marginStart="16dp"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp" />
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp" />
     </LinearLayout>
 </LinearLayout>

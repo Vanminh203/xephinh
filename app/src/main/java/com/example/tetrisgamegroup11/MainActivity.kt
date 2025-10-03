@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity() {
         dialog.setContentView(R.layout.custom_mode_dialog)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         val btnClassic = dialog.findViewById<Button>(R.id.btn_classic)
-        val btnMorph = dialog.findViewById<Button>(R.id.btn_morph)
+        val btnSecret = dialog.findViewById<Button>(R.id.btn_secret)
         val btnTarget = dialog.findViewById<Button>(R.id.btn_target)
         val btnClose = dialog.findViewById<ImageButton>(R.id.btn_close)
 
@@ -119,9 +119,9 @@ class MainActivity : AppCompatActivity() {
             selectModeButton.text = "Mode: Classic"
             dialog.dismiss()
         }
-        btnMorph.setOnClickListener {
-            selectedMode = "MORPH"
-            selectModeButton.text = "Mode: Morph"
+        btnSecret.setOnClickListener {
+            selectedMode = "SECRET"
+            selectModeButton.text = "Mode: Secret"
             dialog.dismiss()
         }
         btnTarget.setOnClickListener {

@@ -1,20 +1,18 @@
 package com.example.tetrisgamegroup11.ui.game
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.text.Editable
-import android.text.TextWatcher
-import android.util.Log
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.widget.Button
-import android.widget.FrameLayout
 import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -39,24 +37,29 @@ class GameActivity : AppCompatActivity() {
     private lateinit var scoreTextView: TextView
     private lateinit var linesClearedTextView: TextView
     private lateinit var gameContainer: ConstraintLayout
+    private lateinit var timeTextView: TextView
+    private lateinit var timeContainer: LinearLayout
+    private lateinit var selectedMode: String
+    private lateinit var selectedLevel: String
 
     private var powerUpDialog: AlertDialog? = null
+    private var gameOverDialog: AlertDialog? = null
 
     private val handler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
+
         linesClearedTextView = findViewById(R.id.tv_line)
         scoreTextView = findViewById(R.id.tv_score)
         nextPieceView = findViewById(R.id.next_piece_container)
         gameContainer = findViewById(R.id.game_grid_container)
+        timeTextView = findViewById(R.id.tv_time)
+        timeContainer = findViewById(R.id.time_container)
 
         val appDatabase = AppDatabase.getDatabase(this)
-        val gamePieceDAO = appDatabase.gamePieceDAO()
-        val gameGridDAO = appDatabase.gameGridDAO()
         val gameSettingDAO = appDatabase.gameSettingDAO()
-        val gameHistoryDAO = appDatabase.gameHistoryDAO()
 
         CoroutineScope(Dispatchers.IO).launch {
             val isMuted = gameSettingDAO.getVolumeSetting() ?: false
@@ -65,18 +68,9 @@ class GameActivity : AppCompatActivity() {
             }
         }
 
-        SoundManager.playBackgroundMusic()
-
-        val selectedLevel = intent.getStringExtra("LEVEL") ?: "Easy"
-        val selectedMode = intent.getStringExtra("MODE") ?: "CLASSIC"
+        selectedLevel = intent.getStringExtra("LEVEL") ?: "Easy"
+        selectedMode = intent.getStringExtra("MODE") ?: "CLASSIC"
         val gameMode = GameMode.valueOf(selectedMode)
-
-        val levelValue = when (selectedLevel) {
-            "Easy" -> 1
-            "Medium" -> 2
-            "Hard" -> 3
-            else -> 1
-        }
 
         val gameGrid = GameGrid(
             gridId = "default",
@@ -97,6 +91,13 @@ class GameActivity : AppCompatActivity() {
 
         gameManager.gameMode = gameMode
 
+        timeContainer.visibility = View.VISIBLE
+
+        if (gameMode == GameMode.SECRET) {
+            nextPieceView.visibility = View.GONE
+            findViewById<TextView>(R.id.tv_next_label).visibility = View.GONE
+        }
+
         gameManager.onLinesClearedUpdated = { linesCleared ->
             updateLinesCleared(linesCleared)
         }
@@ -113,11 +114,17 @@ class GameActivity : AppCompatActivity() {
             showVisualEffect(effectType)
         }
 
-        gameView.setGameManager(gameManager)
-        nextPieceView.updateNextPiece(gameManager.nextPiece)
+        gameManager.onTimeUpdated = { elapsedTime ->
+            updateTime(elapsedTime)
+        }
 
-        gameManager.onNewPieceGenerated = { nextPiece ->
-            nextPieceView.updateNextPiece(nextPiece)
+        gameView.setGameManager(gameManager)
+
+        if (gameMode != GameMode.SECRET) {
+            nextPieceView.updateNextPiece(gameManager.nextPiece)
+            gameManager.onNewPieceGenerated = { nextPiece ->
+                nextPieceView.updateNextPiece(nextPiece)
+            }
         }
 
         findViewById<ConstraintLayout>(R.id.game_grid_container)?.addView(gameView)
@@ -129,6 +136,29 @@ class GameActivity : AppCompatActivity() {
         updateVolumeIcon()
 
         startCooldownUpdates()
+    }
+
+    private fun updateTime(elapsedTime: Long) {
+        if (gameManager.gameMode == GameMode.TARGET) {
+            // Countdown timer for TARGET mode
+            val remainingTime = 300000L - elapsedTime // 5 minutes
+            val minutes = (remainingTime / 1000) / 60
+            val seconds = (remainingTime / 1000) % 60
+            timeTextView.text = String.format("%d:%02d", minutes, seconds)
+
+            // Change color when time is running out
+            if (remainingTime <= 30000L) {
+                timeTextView.setTextColor(Color.RED)
+            } else {
+                timeTextView.setTextColor(Color.BLACK)
+            }
+        } else {
+            // Count-up timer for other modes
+            val minutes = (elapsedTime / 1000) / 60
+            val seconds = (elapsedTime / 1000) % 60
+            timeTextView.text = String.format("%d:%02d", minutes, seconds)
+            timeTextView.setTextColor(Color.BLACK)
+        }
     }
 
     private fun resetPauseButton() {
@@ -162,6 +192,7 @@ class GameActivity : AppCompatActivity() {
             updateLevel(levelTextView.text.toString())
             resetPauseButton()
         }
+
         findViewById<Button>(R.id.btn_left).setOnClickListener {
             gameManager.movePieceLeft()
             gameView.invalidate()
@@ -190,6 +221,12 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun showPowerUpDialog() {
+        wasPausedBeforeDialog = isPaused
+        if (!isPaused) {
+            gameManager.pauseGameLogicOnly()
+            isPaused = true
+        }
+
         val dialogBuilder = AlertDialog.Builder(this)
         val dialogView = layoutInflater.inflate(R.layout.dialog_powerup_menu, null)
         dialogBuilder.setView(dialogView)
@@ -224,6 +261,17 @@ class GameActivity : AppCompatActivity() {
 
         dialogView.findViewById<Button>(R.id.btn_close_menu).setOnClickListener {
             powerUpDialog?.dismiss()
+            if (!wasPausedBeforeDialog) {
+                gameManager.resumeGameLogicOnly()
+                isPaused = false
+            }
+        }
+
+        powerUpDialog?.setOnDismissListener {
+            if (!wasPausedBeforeDialog) {
+                gameManager.resumeGameLogicOnly()
+                isPaused = false
+            }
         }
 
         updatePowerUpDialogButtons()
@@ -261,12 +309,7 @@ class GameActivity : AppCompatActivity() {
 
     private fun usePowerUp(type: PowerUpType) {
         if (gameManager.usePowerUp(type)) {
-            Toast.makeText(this, "${type.getDisplayName()} activated!", Toast.LENGTH_SHORT).show()
             powerUpDialog?.dismiss()
-        } else {
-            val powerUp = gameManager.powerUps[type]
-            val remainingSeconds = (powerUp?.getRemainingCooldown(System.currentTimeMillis()) ?: 0) / 1000
-            Toast.makeText(this, "Cooldown: ${remainingSeconds}s", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -333,84 +376,106 @@ class GameActivity : AppCompatActivity() {
         gameManager.saveCurrentGameState()
     }
 
+    fun showWinDialog(score: Int) {
+        SoundManager.playWinSound()
+
+        val dialogBuilder = AlertDialog.Builder(this)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_win, null)
+        dialogBuilder.setView(dialogView)
+        dialogBuilder.setCancelable(false)
+
+        dialogView.findViewById<TextView>(R.id.tv_score).text = "Your Score: $score"
+
+        gameOverDialog = dialogBuilder.create()
+
+        dialogView.findViewById<Button>(R.id.btn_play_again).setOnClickListener {
+            gameOverDialog?.dismiss()
+            // Restart with same mode and level
+            val intent = Intent(this, GameActivity::class.java)
+            intent.putExtra("LEVEL", selectedLevel)
+            intent.putExtra("MODE", selectedMode)
+            finish()
+            startActivity(intent)
+        }
+
+        dialogView.findViewById<Button>(R.id.btn_view_high_score).setOnClickListener {
+            gameOverDialog?.dismiss()
+            val intent = Intent(this, RankingActivity::class.java)
+            intent.putExtra("MODE", selectedMode)
+            startActivity(intent)
+            finish()
+        }
+
+        gameOverDialog?.setCanceledOnTouchOutside(false)
+        gameOverDialog?.show()
+    }
+
     fun showGameOverDialog(score: Int) {
-        SoundManager.playGameOverSound()
+        SoundManager.playLoseSound()
 
         val dialogBuilder = AlertDialog.Builder(this)
         val dialogView = layoutInflater.inflate(R.layout.dialog_game_over, null)
         dialogBuilder.setView(dialogView)
+        dialogBuilder.setCancelable(false)
 
         dialogView.findViewById<TextView>(R.id.tv_score).text = "Your Score: $score"
 
-        val dialog = dialogBuilder.create()
+        gameOverDialog = dialogBuilder.create()
 
-        dialogView.findViewById<Button>(R.id.btn_restart).setOnClickListener {
-            dialog.dismiss()
-            gameManager.resetGame()
-            resetPauseButton()
+        dialogView.findViewById<Button>(R.id.btn_play_again).setOnClickListener {
+            gameOverDialog?.dismiss()
+            // Restart with same mode and level
+            val intent = Intent(this, GameActivity::class.java)
+            intent.putExtra("LEVEL", selectedLevel)
+            intent.putExtra("MODE", selectedMode)
+            finish()
+            startActivity(intent)
         }
-        dialogView.findViewById<Button>(R.id.btn_quit).setOnClickListener {
-            dialog.dismiss()
-            saveGameState()
+
+        dialogView.findViewById<Button>(R.id.btn_view_high_score).setOnClickListener {
+            gameOverDialog?.dismiss()
+            val intent = Intent(this, RankingActivity::class.java)
+            intent.putExtra("MODE", selectedMode)
+            startActivity(intent)
             finish()
         }
 
-        dialog.show()
+        gameOverDialog?.setCanceledOnTouchOutside(false)
+        gameOverDialog?.show()
     }
 
     override fun onPause() {
         super.onPause()
         saveGameState()
-        SoundManager.pauseBackgroundMusic()
     }
 
     override fun onResume() {
         super.onResume()
-        if (!SoundManager.isMuted()) {
-            SoundManager.playBackgroundMusic()
-        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         handler.removeCallbacksAndMessages(null)
         powerUpDialog?.dismiss()
+        gameOverDialog?.dismiss()
     }
 
     private fun showVisualEffect(effectType: String) {
         when (effectType) {
             "explosion" -> {
-                // Flash red for explosion
                 flashScreen(Color.argb(100, 255, 0, 0), 200)
-                Toast.makeText(this, "💥 EXPLOSION!", Toast.LENGTH_SHORT).show()
             }
             "reverse_gravity" -> {
-                // Flash blue for reverse gravity
                 flashScreen(Color.argb(100, 0, 100, 255), 300)
-                Toast.makeText(this, "⬆️ Reverse Gravity Active!", Toast.LENGTH_SHORT).show()
-            }
-            "reverse_gravity_end" -> {
-                Toast.makeText(this, "Gravity Restored", Toast.LENGTH_SHORT).show()
             }
             "freeze_time" -> {
-                // Flash white for freeze time
                 flashScreen(Color.argb(150, 255, 255, 255), 500)
-                Toast.makeText(this, "⏸️ Time Frozen!", Toast.LENGTH_SHORT).show()
-            }
-            "freeze_time_end" -> {
-                Toast.makeText(this, "Time Resumed", Toast.LENGTH_SHORT).show()
             }
             "delete_row" -> {
                 flashScreen(Color.argb(80, 255, 255, 0), 200)
             }
             "switch_piece" -> {
                 flashScreen(Color.argb(80, 0, 255, 0), 200)
-            }
-            "exploding_activated" -> {
-                Toast.makeText(this, "💣 Exploding Piece Ready!", Toast.LENGTH_SHORT).show()
-            }
-            "random_piece" -> {
-                Toast.makeText(this, "🎲 Next Piece Changed!", Toast.LENGTH_SHORT).show()
             }
         }
     }

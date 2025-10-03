@@ -43,12 +43,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp"/>
 
-    <!-- Nút chọn Morph -->
+    <!-- renamed btn_morph to btn_secret -->
     <Button
-        android:id="@+id/btn_morph"
+        android:id="@+id/btn_secret"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/morph"
+        android:text="@string/secret"
         app:layout_constraintTop_toBottomOf="@id/btn_classic"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -60,7 +60,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/target"
-        app:layout_constraintTop_toBottomOf="@id/btn_morph"
+        app:layout_constraintTop_toBottomOf="@id/btn_secret"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp"/>

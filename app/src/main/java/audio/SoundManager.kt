@@ -7,11 +7,13 @@ import com.example.tetrisgamegroup11.R
 
 class SoundManager private constructor(context: Context) {
 
-    private var backgroundMusic: MediaPlayer? = MediaPlayer.create(context, R.raw.background_music).apply {
-        isLooping = true
-    }
     private var lineClearSound: MediaPlayer? = MediaPlayer.create(context, R.raw.line_clear_sound)
-    private var gameOverSound: MediaPlayer? = MediaPlayer.create(context, R.raw.game_over)
+    private var gameOverSound: MediaPlayer? = MediaPlayer.create(context, R.raw.lose_sound)
+    private var winSound: MediaPlayer? = MediaPlayer.create(context, R.raw.win_sound)
+    private var attackSound: MediaPlayer? = MediaPlayer.create(context, R.raw.attack_sound)
+    private var defenseSound: MediaPlayer? = MediaPlayer.create(context, R.raw.defense_sound)
+    private var timeoutWarningSound: MediaPlayer? = MediaPlayer.create(context, R.raw.timeout_warning)
+
     private val preferences: SharedPreferences =
         context.getSharedPreferences("TetrisGamePreferences", Context.MODE_PRIVATE)
 
@@ -28,46 +30,71 @@ class SoundManager private constructor(context: Context) {
         }
 
         fun playBackgroundMusic() {
+            // No background music in game
+        }
+
+        fun pauseBackgroundMusic() {
+            // No background music in game
+        }
+
+        fun playLineClearSound() {
             instance?.let {
-                if (!it.isMuted && it.backgroundMusic?.isPlaying == false) {
-                    it.backgroundMusic?.start()
+                if (!it.isMuted) {
+                    it.lineClearSound?.start()
                 }
             }
         }
 
-        fun pauseBackgroundMusic() {
-            instance?.backgroundMusic?.pause()
+        fun playLoseSound() {
+            instance?.let {
+                if (!it.isMuted) {
+                    it.gameOverSound?.start()
+                }
+            }
         }
 
-        fun playLineClearSound() {
-            instance?.lineClearSound?.start() // Không kiểm tra `isMuted` trước khi phát âm thanh
+        fun playWinSound() {
+            instance?.let {
+                if (!it.isMuted) {
+                    it.winSound?.start()
+                }
+            }
         }
 
+        fun playAttackSound() {
+            instance?.let {
+                if (!it.isMuted) {
+                    it.attackSound?.start()
+                }
+            }
+        }
 
-        fun playGameOverSound() {
-            instance?.gameOverSound?.start()
+        fun playDefenseSound() {
+            instance?.let {
+                if (!it.isMuted) {
+                    it.defenseSound?.start()
+                }
+            }
+        }
+
+        fun playTimeoutWarningSound() {
+            instance?.let {
+                if (!it.isMuted) {
+                    it.timeoutWarningSound?.start()
+                }
+            }
         }
 
         fun toggleMute() {
             instance?.let {
                 val newMutedState = !it.isMuted
                 it.preferences.edit().putBoolean("isMuted", newMutedState).apply()
-
-                if (newMutedState) {
-                    pauseBackgroundMusic()
-                } else {
-                    playBackgroundMusic()
-                }
             }
         }
+
         private var isMuted = false
         fun setMute(mute: Boolean) {
             isMuted = mute
-            if (isMuted) {
-                pauseBackgroundMusic()
-            } else {
-                playBackgroundMusic()
-            }
         }
 
         fun isMuted(): Boolean {
@@ -75,16 +102,13 @@ class SoundManager private constructor(context: Context) {
         }
 
         fun release() {
-            instance?.backgroundMusic?.release()
             instance?.lineClearSound?.release()
             instance?.gameOverSound?.release()
+            instance?.winSound?.release()
+            instance?.attackSound?.release()
+            instance?.defenseSound?.release()
+            instance?.timeoutWarningSound?.release()
             instance = null
-        }
-    }
-
-    init {
-        if (isMuted) {
-            backgroundMusic?.pause()
         }
     }
 }

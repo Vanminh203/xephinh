@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import com.example.tetrisgamegroup11.audio.SoundManager
 import com.example.tetrisgamegroup11.database.AppDatabase
 import com.example.tetrisgamegroup11.database.GameSetting
@@ -41,6 +40,12 @@ class GameManager(
     var isPaused: Boolean = false
     var isGameInProcess: Boolean = true
 
+    private var gameStartTime: Long = 0
+    private var elapsedTime: Long = 0
+    private var timerHandler: Handler = Handler(Looper.getMainLooper())
+    private var timerRunnable: Runnable? = null
+    private var hasPlayedWarning = false
+
     var gameMode: GameMode = GameMode.CLASSIC
         set(value) {
             field = value
@@ -50,16 +55,19 @@ class GameManager(
                     repeat(5) {
                         targetLines.add(Random.nextInt(5, 15))
                     }
+                    startTimer()
                 }
-                GameMode.MORPH -> {
-                    morphCounter = 0
+                GameMode.SECRET -> {
+                    secretCounter = 0
                 }
-                else -> {}
+                else -> {
+                    startCountUpTimer()
+                }
             }
         }
 
     private var targetLines: MutableSet<Int> = mutableSetOf()
-    private var morphCounter: Int = 0
+    private var secretCounter: Int = 0
 
     val powerUps = mutableMapOf<PowerUpType, PowerUp>()
     private var explodingPieceActive = false
@@ -72,16 +80,17 @@ class GameManager(
     var onScoreUpdated: ((Int) -> Unit)? = null
     var onPowerUpStateChanged: ((PowerUpType, PowerUp) -> Unit)? = null
     var onVisualEffect: ((String) -> Unit)? = null
+    var onTimeUpdated: ((Long) -> Unit)? = null
 
     private val handler = Handler(Looper.getMainLooper())
     private val fallRunnable = object : Runnable {
         override fun run() {
             if (isGameInProcess && !isPaused) {
-                if (gameMode == GameMode.MORPH) {
-                    morphCounter++
-                    if (morphCounter >= 5) {
-                        morphCurrentPiece()
-                        morphCounter = 0
+                if (gameMode == GameMode.SECRET) {
+                    secretCounter++
+                    if (secretCounter >= 5) {
+                        secretMorphPiece()
+                        secretCounter = 0
                     }
                 }
 
@@ -105,6 +114,62 @@ class GameManager(
 
         CoroutineScope(Dispatchers.IO).launch {
             loadVolumeSetting()
+        }
+    }
+
+    private fun startCountUpTimer() {
+        gameStartTime = System.currentTimeMillis()
+        timerRunnable = object : Runnable {
+            override fun run() {
+                if (isGameInProcess && !isPaused) {
+                    elapsedTime = System.currentTimeMillis() - gameStartTime
+                    onTimeUpdated?.invoke(elapsedTime)
+                }
+                timerHandler.postDelayed(this, 100)
+            }
+        }
+        timerHandler.post(timerRunnable!!)
+    }
+
+    private fun startTimer() {
+        gameStartTime = System.currentTimeMillis()
+        hasPlayedWarning = false
+        timerRunnable = object : Runnable {
+            override fun run() {
+                if (isGameInProcess && gameMode == GameMode.TARGET) {
+                    elapsedTime = System.currentTimeMillis() - gameStartTime
+                    onTimeUpdated?.invoke(elapsedTime)
+
+                    val remainingTime = 300000L - elapsedTime // 5 minutes = 300000ms
+
+                    if (remainingTime <= 30000L && !hasPlayedWarning) {
+                        SoundManager.playTimeoutWarningSound()
+                        hasPlayedWarning = true
+                    }
+
+                    if (elapsedTime >= 300000L) {
+                        checkTargetModeResult()
+                        return
+                    }
+                }
+                timerHandler.postDelayed(this, 100)
+            }
+        }
+        timerHandler.post(timerRunnable!!)
+    }
+
+    private fun checkTargetModeResult() {
+        val targetScore = when (level) {
+            "Easy" -> 200
+            "Medium" -> 500
+            "Hard" -> 1000
+            else -> 200
+        }
+
+        if (score >= targetScore) {
+            winGame()
+        } else {
+            endGame()
         }
     }
 
@@ -135,7 +200,7 @@ class GameManager(
         }
     }
 
-    private fun morphCurrentPiece() {
+    private fun secretMorphPiece() {
         val types = GamePiece.Type.values()
         val newType = types[Random.nextInt(types.size)]
         val newPiece = GamePiece.createPiece(newType)
@@ -196,30 +261,36 @@ class GameManager(
         when (type) {
             PowerUpType.DELETE_BOTTOM_ROW -> {
                 deleteBottomRow()
+                SoundManager.playAttackSound()
                 onVisualEffect?.invoke("delete_row")
             }
             PowerUpType.SWITCH_NEXT_PIECE -> {
                 switchToNextPiece()
+                SoundManager.playAttackSound()
                 onVisualEffect?.invoke("switch_piece")
             }
             PowerUpType.EXPLODING_PIECE -> {
                 explodingPieceActive = true
+                SoundManager.playAttackSound()
                 onVisualEffect?.invoke("exploding_activated")
             }
             PowerUpType.REVERSE_GRAVITY -> {
                 reverseGravityActive = true
-                reverseGravityEndTime = currentTime + 3000L // 3 seconds
+                reverseGravityEndTime = currentTime + 3000L
+                SoundManager.playDefenseSound()
                 onVisualEffect?.invoke("reverse_gravity")
             }
             PowerUpType.RANDOM_NEXT_PIECE -> {
                 nextPiece = generateNewPiece()
                 onNewPieceGenerated?.invoke(nextPiece)
                 gameView.invalidate()
+                SoundManager.playDefenseSound()
                 onVisualEffect?.invoke("random_piece")
             }
             PowerUpType.FREEZE_TIME -> {
                 freezeTimeActive = true
-                freezeTimeEndTime = currentTime + 5000L // 5 seconds
+                freezeTimeEndTime = currentTime + 5000L
+                SoundManager.playDefenseSound()
                 onVisualEffect?.invoke("freeze_time")
             }
         }
@@ -266,10 +337,10 @@ class GameManager(
                     val y = currentPiece.positionY + rowIndex
 
                     val adjacentCells = listOf(
-                        Pair(x, y + 1),  // below
-                        Pair(x, y - 1),  // above
-                        Pair(x - 1, y),  // left
-                        Pair(x + 1, y)   // right
+                        Pair(x, y + 1),
+                        Pair(x, y - 1),
+                        Pair(x - 1, y),
+                        Pair(x + 1, y)
                     )
 
                     adjacentCells.forEach { (adjX, adjY) ->
@@ -338,7 +409,7 @@ class GameManager(
         explodingPieceActive = false
         reverseGravityActive = false
         freezeTimeActive = false
-        morphCounter = 0
+        secretCounter = 0
         initializePowerUps()
 
         if (gameMode == GameMode.TARGET) {
@@ -346,16 +417,48 @@ class GameManager(
             repeat(5) {
                 targetLines.add(Random.nextInt(5, 15))
             }
+            elapsedTime = 0
+            hasPlayedWarning = false
+            startTimer()
+        } else {
+            elapsedTime = 0
+            startCountUpTimer()
         }
     }
 
     private var isGameEnded = false
+
+    private fun winGame() {
+        if (isGameEnded) return
+
+        isGameEnded = true
+        isGameInProcess = false
+        timerRunnable?.let { timerHandler.removeCallbacks(it) }
+
+        val timestamp = System.currentTimeMillis()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val rank = calculateRank(score, level.toString(), timestamp)
+            gameHistoryDAO.saveScore(
+                GameHistory(
+                    score = score,
+                    level = level.toString(),
+                    linesCleared = linesCleared,
+                    timestamp = timestamp,
+                    rank = rank
+                )
+            )
+        }
+        (gameView.context as? GameActivity)?.showWinDialog(score)
+    }
 
     fun endGame() {
         if (isGameEnded) return
 
         isGameEnded = true
         isGameInProcess = false
+        timerRunnable?.let { timerHandler.removeCallbacks(it) }
+
         val timestamp = System.currentTimeMillis()
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -376,13 +479,21 @@ class GameManager(
     fun pauseGame() {
         isPaused = true
         gameView.pauseGame()
-        SoundManager.pauseBackgroundMusic()
     }
 
     fun resumeGame() {
         isPaused = false
         gameView.resumeGame()
-        SoundManager.playBackgroundMusic()
+    }
+
+    fun pauseGameLogicOnly() {
+        isPaused = true
+        gameView.pauseGame()
+    }
+
+    fun resumeGameLogicOnly() {
+        isPaused = false
+        gameView.resumeGame()
     }
 
     fun togglePause() {
@@ -411,7 +522,9 @@ class GameManager(
     }
 
     fun movePieceDown() {
-        if (!isPaused && !detectCollision(0, 1)) {
+        if (isPaused) return
+
+        if (!detectCollision(0, 1)) {
             currentPiece.positionY++
         } else {
             if (explodingPieceActive) {
@@ -502,7 +615,6 @@ class GameManager(
         if (rowsCleared > 0) {
             score += rowsCleared * 100 * rowsCleared
             linesCleared += rowsCleared
-            Log.d("GameManager", "Updating linesCleared: $linesCleared")
             onScoreUpdated?.invoke(score)
             onLinesClearedUpdated?.invoke(linesCleared)
             SoundManager.playLineClearSound()
@@ -539,5 +651,9 @@ class GameManager(
         )
 
         return sortedList.indexOfFirst { it.score == score && it.level == level && it.timestamp == timestamp } + 1
+    }
+
+    fun isSecretMode(): Boolean {
+        return gameMode == GameMode.SECRET
     }
 }
