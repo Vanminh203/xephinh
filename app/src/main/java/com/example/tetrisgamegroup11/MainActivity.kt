@@ -34,7 +34,6 @@ class MainActivity : AppCompatActivity() {
         levelButton = findViewById(R.id.btn_level)
         rankingButton = findViewById(R.id.btn_ranking)
         volumeButton = findViewById(R.id.btn_volume)
-
         setupButtonListeners()
         updateVolumeIcon()
     }

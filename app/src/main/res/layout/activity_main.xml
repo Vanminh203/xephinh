@@ -38,103 +38,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="24dp"/>
 
-    <!-- Add High Scores section -->
-    <LinearLayout
-        android:id="@+id/high_scores_container"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="#FFFFFF"
-        android:padding="12dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/game_title"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="High Scores"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="8dp"/>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Classic:"
-                android:textSize="14sp"
-                android:textColor="@android:color/black"/>
-
-            <TextView
-                android:id="@+id/tv_high_score_classic"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="#6495ED"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginTop="4dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Secret:"
-                android:textSize="14sp"
-                android:textColor="@android:color/black"/>
-
-            <TextView
-                android:id="@+id/tv_high_score_secret"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="#6495ED"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginTop="4dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Target:"
-                android:textSize="14sp"
-                android:textColor="@android:color/black"/>
-
-            <TextView
-                android:id="@+id/tv_high_score_target"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="#6495ED"/>
-        </LinearLayout>
-    </LinearLayout>
 
     <!-- Nút New Game -->
     <Button
@@ -144,7 +47,7 @@
         android:text="@string/new_game"
         android:backgroundTint="#6495ED"
         android:textColor="@android:color/black"
-        app:layout_constraintTop_toBottomOf="@id/high_scores_container"
+        app:layout_constraintTop_toBottomOf="@id/game_title"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"/>

@@ -14,6 +14,12 @@ interface GameHistoryDAO {
     @Query("SELECT * FROM GameHistory ORDER BY score DESC, level DESC, timestamp DESC")
     fun getAllGameHistory(): List<GameHistory>
 
+    @Query("SELECT * FROM GameHistory WHERE gameMode = :gameMode ORDER BY score DESC, level DESC, timestamp DESC")
+    fun getGameHistoryByMode(gameMode: String): List<GameHistory>
+
+    @Query("SELECT * FROM GameHistory WHERE gameMode = :gameMode ORDER BY score DESC, level DESC, timestamp DESC LIMIT :limit")
+    fun getTopGameHistoryByMode(gameMode: String, limit: Int): List<GameHistory>
+
     // Lấy điểm cao nhất cho một level cụ thể
     @Query("SELECT MAX(score) FROM GameHistory WHERE level = :level")
     fun getHighestScore(level: String): Int?

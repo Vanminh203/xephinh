@@ -65,6 +65,9 @@ class GameActivity : AppCompatActivity() {
             val isMuted = gameSettingDAO.getVolumeSetting() ?: false
             withContext(Dispatchers.Main) {
                 SoundManager.setMute(isMuted)
+                if (!isMuted) {
+                    SoundManager.playBackgroundMusicLowVolume()
+                }
             }
         }
 
@@ -341,6 +344,9 @@ class GameActivity : AppCompatActivity() {
         dialogView.findViewById<Button>(R.id.btn_yes).setOnClickListener {
             dialog.dismiss()
             saveGameState()
+            val intent = Intent(this, com.example.tetrisgamegroup11.MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            startActivity(intent)
             finish()
         }
 
@@ -402,6 +408,7 @@ class GameActivity : AppCompatActivity() {
             gameOverDialog?.dismiss()
             val intent = Intent(this, RankingActivity::class.java)
             intent.putExtra("MODE", selectedMode)
+            intent.putExtra("SOURCE", "GAME")
             startActivity(intent)
             finish()
         }
@@ -447,10 +454,14 @@ class GameActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         saveGameState()
+        SoundManager.pauseBackgroundMusic()
     }
 
     override fun onResume() {
         super.onResume()
+        if (!SoundManager.isMuted()) {
+            SoundManager.playBackgroundMusicLowVolume()
+        }
     }
 
     override fun onDestroy() {

@@ -358,7 +358,7 @@ class GameManager(
             gameGrid.grid[y][x] = 0
             gameGrid.colors[y][x] = Color.TRANSPARENT
         }
-
+        SoundManager.playBoomSound()
         score += touchedBlocks.size * 10
         onScoreUpdated?.invoke(score)
         onVisualEffect?.invoke("explosion")
@@ -445,7 +445,8 @@ class GameManager(
                     level = level.toString(),
                     linesCleared = linesCleared,
                     timestamp = timestamp,
-                    rank = rank
+                    rank = rank,
+                    gameMode = gameMode.name
                 )
             )
         }
@@ -469,7 +470,8 @@ class GameManager(
                     level = level.toString(),
                     linesCleared = linesCleared,
                     timestamp = timestamp,
-                    rank = rank
+                    rank = rank,
+                    gameMode = gameMode.name
                 )
             )
         }

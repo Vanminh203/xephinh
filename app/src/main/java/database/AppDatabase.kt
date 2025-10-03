@@ -10,7 +10,7 @@ import com.example.tetrisgamegroup11.model.GameGrid
 import com.example.tetrisgamegroup11.model.GamePiece
 import com.example.tetrisgamegroup11.utils.Converters
 
-@Database(entities = [GameHistory::class, GameGrid::class, GamePiece::class, GameSetting::class], version = 1)
+@Database(entities = [GameHistory::class, GameGrid::class, GamePiece::class, GameSetting::class], version = 2)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 

@@ -14,6 +14,7 @@ data class GameHistory(
     val timestamp: Long,
     val linesCleared: Int,
     val rank: Int,
+    val gameMode: String = "CLASSIC", // Default to CLASSIC for backward compatibility
     val timestampFormatted: String = formatTimestamp(timestamp)
 ){
     companion object {
