@@ -44,9 +44,6 @@ class GameView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         drawGrid(canvas)
-        if (gameManager.gameMode == GameMode.TARGET) {
-            drawTargetLines(canvas)
-        }
         drawPlacedPieces(canvas)
         drawCurrentPiece(canvas)
     }
@@ -78,38 +75,6 @@ class GameView @JvmOverloads constructor(
             val y = offsetY + j * cellSize.toFloat()
             canvas.drawLine(offsetX, y, offsetX + gridWidth, y, paint)
         }
-    }
-
-    private fun drawTargetLines(canvas: Canvas) {
-        val gridWidth = gameManager.gameGrid.columns * cellSize
-        paint.color = Color.rgb(255, 215, 0) // Gold color
-        paint.alpha = 100
-        paint.style = Paint.Style.FILL
-
-        gameManager.getTargetLines().forEach { lineIndex ->
-            if (lineIndex in 0 until gameManager.gameGrid.rows) {
-                val top = offsetY + lineIndex * cellSize.toFloat()
-                val bottom = top + cellSize
-                canvas.drawRect(offsetX, top, offsetX + gridWidth, bottom, paint)
-            }
-        }
-
-        // Draw dashed border for target lines
-        paint.alpha = 255
-        paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 6f
-        paint.pathEffect = DashPathEffect(floatArrayOf(10f, 10f), 0f)
-
-        gameManager.getTargetLines().forEach { lineIndex ->
-            if (lineIndex in 0 until gameManager.gameGrid.rows) {
-                val top = offsetY + lineIndex * cellSize.toFloat()
-                val bottom = top + cellSize
-                canvas.drawRect(offsetX, top, offsetX + gridWidth, bottom, paint)
-            }
-        }
-
-        paint.pathEffect = null
-        paint.style = Paint.Style.FILL
     }
 
     private fun drawPlacedPieces(canvas: Canvas) {

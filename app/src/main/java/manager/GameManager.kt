@@ -93,9 +93,7 @@ class GameManager(
                         secretCounter = 0
                     }
                 }
-
                 checkPowerUpDurations()
-
                 if (!freezeTimeActive) {
                     if (reverseGravityActive) {
                         movePieceUp()
@@ -160,10 +158,10 @@ class GameManager(
 
     private fun checkTargetModeResult() {
         val targetScore = when (level) {
-            "Easy" -> 200
-            "Medium" -> 500
+            "Easy" -> 300
+            "Medium" -> 600
             "Hard" -> 1000
-            else -> 200
+            else -> 300
         }
 
         if (score >= targetScore) {
@@ -294,7 +292,6 @@ class GameManager(
                 onVisualEffect?.invoke("freeze_time")
             }
         }
-
         onPowerUpStateChanged?.invoke(type, powerUp)
         return true
     }
@@ -364,8 +361,6 @@ class GameManager(
         onVisualEffect?.invoke("explosion")
         gameView.invalidate()
     }
-
-    fun getTargetLines(): Set<Int> = targetLines
 
     fun saveCurrentGameState() {
         CoroutineScope(Dispatchers.IO).launch {
@@ -537,13 +532,8 @@ class GameManager(
                 val rowsCleared = gameGrid.checkAndClearFullRows()
                 if (rowsCleared > 0) {
                     updateScore(rowsCleared)
-
-                    if (gameMode == GameMode.TARGET) {
-                        checkTargetCompletion(rowsCleared)
-                    }
                 }
             }
-
             currentPiece = nextPiece
             currentPiece.positionX = (gameGrid.columns - currentPiece.shape[0].size) / 2
             currentPiece.positionY = 0
@@ -554,25 +544,6 @@ class GameManager(
         gameView.invalidate()
     }
 
-    private fun checkTargetCompletion(rowsCleared: Int) {
-        val iterator = targetLines.iterator()
-        while (iterator.hasNext()) {
-            val targetLine = iterator.next()
-            if (gameGrid.grid[targetLine].all { it == 0 }) {
-                iterator.remove()
-                score += 500
-                onScoreUpdated?.invoke(score)
-            }
-        }
-
-        if (targetLines.isEmpty()) {
-            repeat(5) {
-                targetLines.add(Random.nextInt(5, 15))
-            }
-            score += 1000
-            onScoreUpdated?.invoke(score)
-        }
-    }
 
     private fun detectCollision(deltaX: Int, deltaY: Int): Boolean {
         currentPiece.shape.forEachIndexed { rowIndex, row ->
