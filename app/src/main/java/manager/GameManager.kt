@@ -46,6 +46,9 @@ class GameManager(
     private var timerRunnable: Runnable? = null
     private var hasPlayedWarning = false
 
+    private var pausedStartTime: Long = 0L
+    private var timeSpentPaused: Long = 0L
+
     var gameMode: GameMode = GameMode.CLASSIC
         set(value) {
             field = value
@@ -135,10 +138,17 @@ class GameManager(
         timerRunnable = object : Runnable {
             override fun run() {
                 if (isGameInProcess && gameMode == GameMode.TARGET) {
+
+                    if (freezeTimeActive) {
+                        onTimeUpdated?.invoke(elapsedTime)
+                        timerHandler.postDelayed(this, 100)
+                        return
+                    }
+
                     elapsedTime = System.currentTimeMillis() - gameStartTime
                     onTimeUpdated?.invoke(elapsedTime)
 
-                    val remainingTime = 300000L - elapsedTime // 5 minutes = 300000ms
+                    val remainingTime = 300000L - elapsedTime
 
                     if (remainingTime <= 30000L && !hasPlayedWarning) {
                         SoundManager.playTimeoutWarningSound()
@@ -218,6 +228,13 @@ class GameManager(
         if (freezeTimeActive && currentTime >= freezeTimeEndTime) {
             freezeTimeActive = false
             onVisualEffect?.invoke("freeze_time_end")
+
+            if (gameMode == GameMode.TARGET) {
+                timeSpentPaused = currentTime - pausedStartTime
+                gameStartTime += timeSpentPaused
+                timeSpentPaused = 0L
+                pausedStartTime = 0L
+            }
         }
     }
 
@@ -288,6 +305,11 @@ class GameManager(
             PowerUpType.FREEZE_TIME -> {
                 freezeTimeActive = true
                 freezeTimeEndTime = currentTime + 5000L
+
+                if (gameMode == GameMode.TARGET) {
+                    pausedStartTime = currentTime
+                }
+
                 SoundManager.playDefenseSound()
                 onVisualEffect?.invoke("freeze_time")
             }
