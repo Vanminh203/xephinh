@@ -46,6 +46,12 @@ class GameManager(
     private var timerRunnable: Runnable? = null
     private var hasPlayedWarning = false
 
+    private var pauseStartTime: Long = 0L
+    private var totalPausedTime: Long = 0L
+
+    private var reverseGravityRemainingTime: Long = 0L
+    private var freezeTimeRemainingTime: Long = 0L
+
     private var pausedStartTime: Long = 0L
     private var timeSpentPaused: Long = 0L
 
@@ -120,10 +126,13 @@ class GameManager(
 
     private fun startCountUpTimer() {
         gameStartTime = System.currentTimeMillis()
+        totalPausedTime = 0L
+        pauseStartTime = 0L
+
         timerRunnable = object : Runnable {
             override fun run() {
                 if (isGameInProcess && !isPaused) {
-                    elapsedTime = System.currentTimeMillis() - gameStartTime
+                    elapsedTime = System.currentTimeMillis() - gameStartTime - totalPausedTime
                     onTimeUpdated?.invoke(elapsedTime)
                 }
                 timerHandler.postDelayed(this, 100)
@@ -135,17 +144,20 @@ class GameManager(
     private fun startTimer() {
         gameStartTime = System.currentTimeMillis()
         hasPlayedWarning = false
+        totalPausedTime = 0L
+        pauseStartTime = 0L
+
         timerRunnable = object : Runnable {
             override fun run() {
                 if (isGameInProcess && gameMode == GameMode.TARGET) {
 
-                    if (freezeTimeActive) {
+                    if (freezeTimeActive || isPaused) {
                         onTimeUpdated?.invoke(elapsedTime)
                         timerHandler.postDelayed(this, 100)
                         return
                     }
 
-                    elapsedTime = System.currentTimeMillis() - gameStartTime
+                    elapsedTime = System.currentTimeMillis() - gameStartTime - totalPausedTime
                     onTimeUpdated?.invoke(elapsedTime)
 
                     val remainingTime = 300000L - elapsedTime
@@ -218,6 +230,8 @@ class GameManager(
     }
 
     private fun checkPowerUpDurations() {
+        if (isPaused) return
+
         val currentTime = System.currentTimeMillis()
 
         if (reverseGravityActive && currentTime >= reverseGravityEndTime) {
@@ -292,6 +306,7 @@ class GameManager(
             PowerUpType.REVERSE_GRAVITY -> {
                 reverseGravityActive = true
                 reverseGravityEndTime = currentTime + 3000L
+                reverseGravityRemainingTime = 3000L
                 SoundManager.playDefenseSound()
                 onVisualEffect?.invoke("reverse_gravity")
             }
@@ -305,6 +320,7 @@ class GameManager(
             PowerUpType.FREEZE_TIME -> {
                 freezeTimeActive = true
                 freezeTimeEndTime = currentTime + 5000L
+                freezeTimeRemainingTime = 5000L
 
                 if (gameMode == GameMode.TARGET) {
                     pausedStartTime = currentTime
@@ -320,9 +336,14 @@ class GameManager(
 
     private fun deleteBottomRow() {
         val bottomRow = gameGrid.rows - 1
+        // Đếm số ô đã được xóa (ô có giá trị 1)
+        val deletedCells = gameGrid.grid[bottomRow].count { it == 1 }
+
+        // Xóa hàng cuối cùng
         gameGrid.grid[bottomRow].fill(0)
         gameGrid.colors[bottomRow].fill(Color.TRANSPARENT)
 
+        // Dịch toàn bộ các hàng phía trên xuống
         for (i in bottomRow downTo 1) {
             gameGrid.grid[i] = gameGrid.grid[i - 1].clone()
             gameGrid.colors[i] = gameGrid.colors[i - 1].clone()
@@ -330,7 +351,10 @@ class GameManager(
         gameGrid.grid[0].fill(0)
         gameGrid.colors[0].fill(Color.TRANSPARENT)
 
-        score += 50
+        // Cộng điểm theo số ô xóa được * 10
+        val pointsEarned = deletedCells * 10
+        score += pointsEarned
+
         onScoreUpdated?.invoke(score)
         SoundManager.playLineClearSound()
         gameView.invalidate()
@@ -391,23 +415,6 @@ class GameManager(
         }
     }
 
-    fun loadPreviousGameState() {
-        CoroutineScope(Dispatchers.IO).launch {
-            val savedPiece = gamePieceDAO.getCurrentPiece()
-            if (savedPiece != null) {
-                currentPiece = savedPiece
-            }
-            gameGridDAO.getGrid(gameGrid.gridId)?.let { savedGrid ->
-                gameGrid.loadFrom(savedGrid)
-            }
-        }
-    }
-
-    fun clearLine() {
-        score += 100
-        SoundManager.playLineClearSound()
-    }
-
     fun resetGame() {
         currentPiece = generateNewPiece()
         nextPiece = generateNewPiece()
@@ -427,6 +434,11 @@ class GameManager(
         reverseGravityActive = false
         freezeTimeActive = false
         secretCounter = 0
+        totalPausedTime = 0L
+        pauseStartTime = 0L
+        reverseGravityRemainingTime = 0L
+        freezeTimeRemainingTime = 0L
+
         initializePowerUps()
 
         if (gameMode == GameMode.TARGET) {
@@ -463,7 +475,8 @@ class GameManager(
                     linesCleared = linesCleared,
                     timestamp = timestamp,
                     rank = rank,
-                    gameMode = gameMode.name
+                    gameMode = gameMode.name,
+                    playTime = elapsedTime
                 )
             )
         }
@@ -488,7 +501,8 @@ class GameManager(
                     linesCleared = linesCleared,
                     timestamp = timestamp,
                     rank = rank,
-                    gameMode = gameMode.name
+                    gameMode = gameMode.name,
+                    playTime = elapsedTime
                 )
             )
         }
@@ -496,22 +510,76 @@ class GameManager(
     }
 
     fun pauseGame() {
+        if (isPaused) return
+
         isPaused = true
+        pauseStartTime = System.currentTimeMillis()
+
+        if (reverseGravityActive) {
+            reverseGravityRemainingTime = reverseGravityEndTime - pauseStartTime
+        }
+        if (freezeTimeActive) {
+            freezeTimeRemainingTime = freezeTimeEndTime - pauseStartTime
+        }
+
         gameView.pauseGame()
     }
 
     fun resumeGame() {
+        if (!isPaused) return
+
         isPaused = false
+        val currentTime = System.currentTimeMillis()
+
+        if (pauseStartTime > 0) {
+            totalPausedTime += currentTime - pauseStartTime
+            pauseStartTime = 0L
+        }
+
+        if (reverseGravityActive && reverseGravityRemainingTime > 0) {
+            reverseGravityEndTime = currentTime + reverseGravityRemainingTime
+        }
+        if (freezeTimeActive && freezeTimeRemainingTime > 0) {
+            freezeTimeEndTime = currentTime + freezeTimeRemainingTime
+        }
+
         gameView.resumeGame()
     }
 
     fun pauseGameLogicOnly() {
+        if (isPaused) return
+
         isPaused = true
+        pauseStartTime = System.currentTimeMillis()
+
+        if (reverseGravityActive) {
+            reverseGravityRemainingTime = reverseGravityEndTime - pauseStartTime
+        }
+        if (freezeTimeActive) {
+            freezeTimeRemainingTime = freezeTimeEndTime - pauseStartTime
+        }
+
         gameView.pauseGame()
     }
 
     fun resumeGameLogicOnly() {
+        if (!isPaused) return
+
         isPaused = false
+        val currentTime = System.currentTimeMillis()
+
+        if (pauseStartTime > 0) {
+            totalPausedTime += currentTime - pauseStartTime
+            pauseStartTime = 0L
+        }
+
+        if (reverseGravityActive && reverseGravityRemainingTime > 0) {
+            reverseGravityEndTime = currentTime + reverseGravityRemainingTime
+        }
+        if (freezeTimeActive && freezeTimeRemainingTime > 0) {
+            freezeTimeEndTime = currentTime + freezeTimeRemainingTime
+        }
+
         gameView.resumeGame()
     }
 
@@ -566,7 +634,6 @@ class GameManager(
         gameView.invalidate()
     }
 
-
     private fun detectCollision(deltaX: Int, deltaY: Int): Boolean {
         currentPiece.shape.forEachIndexed { rowIndex, row ->
             row.forEachIndexed { colIndex, cell ->
@@ -613,6 +680,19 @@ class GameManager(
             onScoreUpdated?.invoke(score)
             onLinesClearedUpdated?.invoke(linesCleared)
             SoundManager.playLineClearSound()
+
+            if (gameMode == GameMode.TARGET) {
+                val targetScore = when (level) {
+                    "Easy" -> 300
+                    "Medium" -> 600
+                    "Hard" -> 1000
+                    else -> 300
+                }
+
+                if (score >= targetScore) {
+                    winGame()
+                }
+            }
         }
     }
 
@@ -628,11 +708,6 @@ class GameManager(
         }
     }
 
-    fun updateVolumeSetting(isVolumeOn: Boolean) {
-        CoroutineScope(Dispatchers.IO).launch {
-            gameSettingDAO.saveSettings(GameSetting(volumeOn = isVolumeOn))
-        }
-    }
 
     private suspend fun calculateRank(score: Int, level: String, timestamp: Long): Int {
         val historyList = withContext(Dispatchers.IO) {

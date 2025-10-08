@@ -80,13 +80,28 @@
                 android:textColor="#333333" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tv_date"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Mon, 01 Jan 2024 - 12:00:00"
-            android:textSize="12sp"
-            android:textColor="#999999"
-            android:paddingTop="4dp" />
+            android:orientation="horizontal"
+            android:paddingTop="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Play Time: "
+                android:textSize="14sp"
+                android:textColor="#666666" />
+
+            <TextView
+                android:id="@+id/tv_playtime_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0:00"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#333333" />
+        </LinearLayout>
+
     </LinearLayout>
 </LinearLayout>

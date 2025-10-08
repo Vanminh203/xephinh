@@ -9,7 +9,6 @@
     android:padding="16dp"
     tools:context=".MainActivity">
 
-    <!-- Nút điều chỉnh âm lượng -->
     <ImageButton
         android:id="@+id/btn_volume"
         android:layout_width="48dp"
@@ -22,7 +21,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Tiêu đề game -->
     <TextView
         android:id="@+id/game_title"
         android:layout_width="wrap_content"
@@ -38,8 +36,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="24dp"/>
 
-
-    <!-- Nút New Game -->
     <Button
         android:id="@+id/btn_new_game"
         android:layout_width="wrap_content"
@@ -64,7 +60,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"/>
 
-    <!-- Nút Level -->
     <Button
         android:id="@+id/btn_level"
         android:layout_width="wrap_content"
@@ -77,7 +72,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"/>
 
-    <!-- Nút Ranking -->
     <Button
         android:id="@+id/btn_ranking"
         android:layout_width="wrap_content"
@@ -90,7 +84,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"/>
 
-    <!-- Thông báo yêu cầu chọn level -->
     <TextView
         android:id="@+id/select_level_prompt"
         android:layout_width="wrap_content"

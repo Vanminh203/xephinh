@@ -15,13 +15,12 @@ data class GameGrid(
     @TypeConverters(Converters::class) var grid: Array<IntArray>,
     @TypeConverters(Converters::class) var colors: Array<IntArray>
 ) {
-    // Method to load data from another GameGrid instance
+
     fun loadFrom(otherGrid: GameGrid) {
         grid = otherGrid.grid
         colors = otherGrid.colors
     }
 
-    // Method to clear the grid data, setting all cells to zero
     fun clearGrid() {
         for (i in grid.indices) {
             grid[i].fill(0)

@@ -39,6 +39,8 @@ class GameActivity : AppCompatActivity() {
     private lateinit var gameContainer: ConstraintLayout
     private lateinit var timeTextView: TextView
     private lateinit var timeContainer: LinearLayout
+    private lateinit var targetTextView: TextView
+    private lateinit var targetContainer: LinearLayout
     private lateinit var selectedMode: String
     private lateinit var selectedLevel: String
 
@@ -57,6 +59,8 @@ class GameActivity : AppCompatActivity() {
         gameContainer = findViewById(R.id.game_grid_container)
         timeTextView = findViewById(R.id.tv_time)
         timeContainer = findViewById(R.id.time_container)
+        targetTextView = findViewById(R.id.tv_target)
+        targetContainer = findViewById(R.id.target_container)
 
         val appDatabase = AppDatabase.getDatabase(this)
         val gameSettingDAO = appDatabase.gameSettingDAO()
@@ -95,6 +99,19 @@ class GameActivity : AppCompatActivity() {
         gameManager.gameMode = gameMode
 
         timeContainer.visibility = View.VISIBLE
+
+        if (gameMode == GameMode.TARGET) {
+            targetContainer.visibility = View.VISIBLE
+            val targetScore = when (selectedLevel) {
+                "Easy" -> 300
+                "Medium" -> 600
+                "Hard" -> 1000
+                else -> 300
+            }
+            targetTextView.text = targetScore.toString()
+        } else {
+            targetContainer.visibility = View.GONE
+        }
 
         if (gameMode == GameMode.SECRET) {
             nextPieceView.visibility = View.GONE
@@ -462,7 +479,13 @@ class GameActivity : AppCompatActivity() {
         if (!SoundManager.isMuted()) {
             SoundManager.playBackgroundMusicLowVolume()
         }
+
+        if (isPaused) {
+            gameManager.resumeGame()
+            isPaused = false
+        }
     }
+
 
     override fun onDestroy() {
         super.onDestroy()

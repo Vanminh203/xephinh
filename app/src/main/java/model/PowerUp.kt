@@ -6,29 +6,10 @@ enum class PowerUpType {
     SWITCH_NEXT_PIECE,      // Đổi sang khối tiếp theo ngay lập tức
     EXPLODING_PIECE,        // Khối nổ - phá hủy tất cả block mà nó chạm vào
 
-    // Phòng thủ (Defense) - 30s cooldown (trừ FREEZE_TIME = 60s)
+    // Phòng thủ (Defense) - 30s cooldown
     REVERSE_GRAVITY,        // Đảo ngược trọng lực - khối bay lên trong 3 giây
     RANDOM_NEXT_PIECE,      // Đổi khối tiếp theo thành khối khác ngẫu nhiên
     FREEZE_TIME;            // Ngưng đọng thời gian - dừng rơi nhưng vẫn di chuyển được
-
-    fun isDefense(): Boolean {
-        return this in listOf(REVERSE_GRAVITY, RANDOM_NEXT_PIECE, FREEZE_TIME)
-    }
-
-    fun isAttack(): Boolean {
-        return this in listOf(DELETE_BOTTOM_ROW, SWITCH_NEXT_PIECE, EXPLODING_PIECE)
-    }
-
-    fun getDisplayName(): String {
-        return when (this) {
-            DELETE_BOTTOM_ROW -> "Delete Bottom Row"
-            SWITCH_NEXT_PIECE -> "Switch Next"
-            EXPLODING_PIECE -> "Exploding Piece"
-            REVERSE_GRAVITY -> "Reverse Gravity"
-            RANDOM_NEXT_PIECE -> "Random Next"
-            FREEZE_TIME -> "Freeze Time"
-        }
-    }
 
     fun getCooldown(): Long {
         return when (this) {

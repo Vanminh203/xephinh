@@ -28,6 +28,7 @@ class SoundManager private constructor(context: Context) {
 
     companion object {
         private var instance: SoundManager? = null
+        private var isLowVolumeMode = false
 
         fun initialize(context: Context) {
             if (instance == null) {
@@ -37,6 +38,7 @@ class SoundManager private constructor(context: Context) {
 
         fun playBackgroundMusic() {
             instance?.let {
+                isLowVolumeMode = false
                 if (!it.isMuted && it.backgroundMusic?.isPlaying == false) {
                     it.backgroundMusic?.setVolume(1.0f, 1.0f) // Normal volume for MainActivity
                     it.backgroundMusic?.start()
@@ -46,6 +48,7 @@ class SoundManager private constructor(context: Context) {
 
         fun playBackgroundMusicLowVolume() {
             instance?.let {
+                isLowVolumeMode = true
                 if (!it.isMuted && it.backgroundMusic?.isPlaying == false) {
                     it.backgroundMusic?.setVolume(0.1f, 0.1f) // Lower fixed volume for GameActivity
                     it.backgroundMusic?.start()
@@ -124,7 +127,11 @@ class SoundManager private constructor(context: Context) {
                 if (newMutedState) {
                     pauseBackgroundMusic()
                 } else {
-                    playBackgroundMusic()
+                    if (isLowVolumeMode) {
+                        playBackgroundMusicLowVolume()
+                    } else {
+                        playBackgroundMusic()
+                    }
                 }
             }
         }

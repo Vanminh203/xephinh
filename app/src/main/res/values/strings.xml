@@ -3,6 +3,10 @@
     <string name="volume_control">Volume Control</string>
     <string name="title_tetris_game">Tetris Game</string>
     <string name="new_game">New Game</string>
+    Added new strings for Start dialog
+    <string name="start">Start</string>
+    <string name="start_game">Start Game</string>
+    <string name="continue_game">Continue</string>
     <string name="select_mode">Select Mode</string>
     <string name="select_level">Select Level</string>
     <string name="ranking">Ranking</string>

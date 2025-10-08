@@ -1,6 +1,5 @@
 package com.example.tetrisgamegroup11
 
-import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.Gravity
@@ -11,6 +10,12 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.tetrisgamegroup11.audio.SoundManager
 import com.example.tetrisgamegroup11.ui.game.GameActivity
 import com.example.tetrisgamegroup11.ui.game.RankingActivity
+import com.example.tetrisgamegroup11.database.AppDatabase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import android.app.Dialog
 
 class MainActivity : AppCompatActivity() {
     private lateinit var newGameButton: Button
@@ -58,10 +63,20 @@ class MainActivity : AppCompatActivity() {
             } else if (selectedLevel == null) {
                 showCustomToast()
             } else {
-                val intent = Intent(this, GameActivity::class.java)
-                intent.putExtra("LEVEL", selectedLevel)
-                intent.putExtra("MODE", selectedMode)
-                startActivity(intent)
+                // Clear saved game state and start new game
+                CoroutineScope(Dispatchers.IO).launch {
+                    val database = AppDatabase.getDatabase(this@MainActivity)
+                    database.gamePieceDAO().clearCurrentPiece()
+                    database.gameGridDAO().clearGrid()
+
+                    withContext(Dispatchers.Main) {
+                        val intent = Intent(this@MainActivity, GameActivity::class.java)
+                        intent.putExtra("LEVEL", selectedLevel)
+                        intent.putExtra("MODE", selectedMode)
+                        intent.putExtra("CONTINUE", false)
+                        startActivity(intent)
+                    }
+                }
             }
         }
 

@@ -17,4 +17,7 @@ interface GameGridDAO {
 
     @Delete
     fun deleteGrid(grid: GameGrid)
+
+    @Query("DELETE FROM GameGrid")
+    fun clearGrid()
 }

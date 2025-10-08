@@ -13,6 +13,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.example.tetrisgamegroup11.MainActivity
 import com.example.tetrisgamegroup11.R
 import com.example.tetrisgamegroup11.database.AppDatabase
+import com.example.tetrisgamegroup11.model.GameHistory
 import com.example.tetrisgamegroup11.model.GameMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -111,7 +112,7 @@ class RankingActivity : AppCompatActivity() {
         val database = AppDatabase.getDatabase(this)
 
         CoroutineScope(Dispatchers.IO).launch {
-            val scores = database.gameHistoryDAO().getTopGameHistoryByMode(gameMode, 10)
+            val scores = database.gameHistoryDAO().getTopGameHistoryByMode(gameMode, 8)
 
             withContext(Dispatchers.Main) {
                 container.removeAllViews()
@@ -129,8 +130,6 @@ class RankingActivity : AppCompatActivity() {
                         scoreView.findViewById<TextView>(R.id.tv_score_value).text = gameHistory.score.toString()
                         scoreView.findViewById<TextView>(R.id.tv_level_value).text = gameHistory.level
                         scoreView.findViewById<TextView>(R.id.tv_lines_value).text = gameHistory.linesCleared.toString()
-                        scoreView.findViewById<TextView>(R.id.tv_date).text = gameHistory.timestampFormatted
-
                         container.addView(scoreView)
                     }
                 }

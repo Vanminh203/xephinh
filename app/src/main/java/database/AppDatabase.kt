@@ -10,7 +10,7 @@ import com.example.tetrisgamegroup11.model.GameGrid
 import com.example.tetrisgamegroup11.model.GamePiece
 import com.example.tetrisgamegroup11.utils.Converters
 
-@Database(entities = [GameHistory::class, GameGrid::class, GamePiece::class, GameSetting::class], version = 2)
+@Database(entities = [GameHistory::class, GameGrid::class, GamePiece::class, GameSetting::class], version = 3)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
@@ -30,7 +30,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "tetris_game_database"
                 )
-                    .fallbackToDestructiveMigration() // Nếu có cấu trúc cũ, xóa bỏ và tạo lại
+                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance

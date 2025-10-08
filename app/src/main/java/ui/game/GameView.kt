@@ -17,8 +17,6 @@ class GameView @JvmOverloads constructor(
     private val paint = Paint()
     private lateinit var gameManager: GameManager
     private var cellSize: Int = 0
-    private var gridWidth: Int = 0
-    private var gridHeight: Int = 0
     private var offsetX: Float = 0f
     private var offsetY: Float = 0f
 
@@ -135,10 +133,8 @@ class GameView @JvmOverloads constructor(
     }
 
     fun pauseGame() {
-        // Thực hiện các thao tác khi tạm dừng
     }
 
     fun resumeGame() {
-        // Thực hiện các thao tác khi tiếp tục trò chơi
     }
 }

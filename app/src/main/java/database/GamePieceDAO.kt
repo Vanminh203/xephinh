@@ -14,4 +14,7 @@ interface GamePieceDAO {
 
     @Update
     fun updatePiece(piece: GamePiece)
+
+    @Query("DELETE FROM GamePiece")
+    fun clearCurrentPiece()
 }
