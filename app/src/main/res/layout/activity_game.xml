@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="#1A1A2E">
 
-    Thanh trên cùng chứa các nút điều khiển>
     <LinearLayout
         android:id="@+id/top_bar"
         android:layout_width="0dp"

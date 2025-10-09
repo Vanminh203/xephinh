@@ -1,15 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
+    android:layout_width="340dp"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="24dp"
-    android:background="@color/white"
+    android:padding="28dp"
+    android:background="@drawable/dialog_background_dark"
     android:gravity="center">
 
-    <!-- added ImageView for congratulation image -->
     <ImageView
-        android:layout_width="200dp"
-        android:layout_height="150dp"
+        android:layout_width="160dp"
+        android:layout_height="120dp"
         android:src="@drawable/congratulation"
         android:contentDescription="Congratulations"
         android:scaleType="fitCenter"
@@ -18,59 +18,76 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="🎉 VICTORY! 🎉"
+        android:text="VICTORY ACHIEVED!"
         android:textStyle="bold"
-        android:textSize="28sp"
-        android:textColor="#4CAF50"
+        android:textSize="32sp"
+        android:textColor="#FFD700"
         android:gravity="center"
-        android:layout_gravity="center"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="12dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Congratulations! You've crushed the target!"
+        android:textSize="16sp"
+        android:textColor="#87CEFA"
+        android:gravity="center"
+        android:layout_marginBottom="24dp" />
+
+    <TextView
+        android:id="@+id/tv_score_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="FINAL SCORE"
+        android:textSize="16sp"
+        android:textColor="#FFFFFF"
+        android:gravity="center"
+        android:layout_marginTop="8dp"/>
 
     <TextView
         android:id="@+id/tv_score"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Your Score"
-        android:textSize="20sp"
-        android:textColor="#000000"
+        android:text="123,456"
+        android:textStyle="bold"
+        android:textSize="30sp"
+        android:textColor="#4CAF50"
+        android:background="@drawable/score_background_dark"
+        android:paddingVertical="10dp"
         android:gravity="center"
-        android:layout_gravity="center"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginBottom="28dp"
+        android:layout_marginTop="8dp"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Congratulations! You've reached the target!"
-        android:textSize="14sp"
-        android:textColor="#666666"
-        android:gravity="center"
-        android:layout_gravity="center"
-        android:layout_marginBottom="24dp" />
-
-    <!-- updated buttons to Play Again and View High Score -->
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_gravity="center"
-        android:gravity="center">
+        android:weightSum="2">
 
         <Button
             android:id="@+id/btn_play_again"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Play Again"
+            android:layout_weight="1"
+            android:text="PLAY AGAIN"
+            android:textStyle="bold"
+            android:textSize="16sp"
             android:backgroundTint="#4CAF50"
-            android:paddingLeft="20dp"
-            android:paddingRight="20dp" />
+            android:textColor="#FFFFFF"
+            android:paddingVertical="12dp"
+            android:layout_marginEnd="8dp"/>
 
         <Button
             android:id="@+id/btn_view_high_score"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="View High Score"
-            android:layout_marginStart="16dp"
-            android:paddingLeft="20dp"
-            android:paddingRight="20dp" />
+            android:layout_weight="1"
+            android:text="RANKING"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:backgroundTint="#FF6B35"
+            android:textColor="#FFFFFF"
+            android:paddingVertical="12dp"
+            android:layout_marginStart="8dp"/>
     </LinearLayout>
 </LinearLayout>

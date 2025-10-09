@@ -1,43 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
+    android:layout_width="300dp"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="20dp"
-    android:background="@color/white"
+    android:padding="24dp"
+    android:background="@drawable/dialog_background_dark"
     android:gravity="center">
+
+    <TextView
+        android:id="@+id/tv_dialog_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="PAUSED"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"
+        android:gravity="center"
+        android:textColor="#FFFFFF" />
 
     <TextView
         android:id="@+id/tv_dialog_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Do you want to quit ?"
+        android:text="Do you want to quit the current game?"
         android:textSize="18sp"
-        android:paddingBottom="20dp"
+        android:layout_marginBottom="24dp"
         android:gravity="center"
-        android:textColor="#120101" />
+        android:textColor="#E0E0E0" />
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:weightSum="2">
 
         <Button
             android:id="@+id/btn_yes"
-            android:layout_width="110dp"
-            android:layout_height="match_parent"
-            android:layout_marginEnd="10dp"
-            android:background="@drawable/border_background"
-            android:text="Yes"
-            android:textColor="#E9F3F4" />
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="12dp"
+            android:text="QUIT"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#F44336"
+            android:paddingVertical="12dp" />
 
         <Button
             android:id="@+id/btn_resume"
-            android:layout_width="110dp"
-            android:layout_height="match_parent"
-            android:background="@drawable/border_background"
-            android:text="Resume"
-            android:textColor="#FAF4F4" />
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="RESUME"
+            android:textStyle="bold"
+            android:textColor="#121212"
+            android:backgroundTint="#87CEFA"
+            android:paddingVertical="12dp" />
     </LinearLayout>
 
 </LinearLayout>
